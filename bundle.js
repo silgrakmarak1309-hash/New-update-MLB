@@ -5603,7 +5603,7 @@ function cj(){
               r === "add_listing" && a.jsx(nj, {}),
               r === "users" && a.jsx(hj, { isSuperAdmin: isSuper }),
               r === "listings" && a.jsx(fj, {}),
-              r === "recharges" && a.jsx(pj, {}),
+              r === "recharges" && a.jsx(pj, { onRefresh: loadNotifs }),
               r === "transactions" && a.jsx(mj, {}),
               r === "banners" && a.jsx(gj, {}),
               r === "categories" && a.jsx(yj, {}),
@@ -6428,8 +6428,496 @@ function fj(){
         ]
       });
 }
-function pj() {
-  return a.jsx("div", { className: "p-4", children: a.jsx("h1", { className: "text-xl font-bold text-gray-900", children: "PRO Monthly Recharges" }) });
+function pj({ onRefresh }) {
+  const toast = he(),
+        [requests, setRequests] = m.useState([]),
+        [usersMap, setUsersMap] = m.useState(new Map()),
+        [loading, setLoading] = m.useState(!0),
+        [statusFilter, setStatusFilter] = m.useState("pending"),
+        [searchQuery, setSearchQuery] = m.useState(""),
+        [rejectTargetId, setRejectTargetId] = m.useState(null),
+        [rejectReason, setRejectReason] = m.useState(""),
+        [isProcessing, setIsProcessing] = m.useState(!1),
+        [previewReceiptUrl, setPreviewReceiptUrl] = m.useState(null),
+        [copiedUtr, setCopiedUtr] = m.useState(null);
+
+  const loadData = m.useCallback(async (isInitial = !1) => {
+    if (isInitial) setLoading(!0);
+    try {
+      const [reqList, userList] = await Promise.all([Jp(), Ic()]);
+      if (Array.isArray(reqList)) setRequests(reqList);
+      const uMap = new Map();
+      (userList || []).forEach(u => {
+        if (u && u.id) uMap.set(u.id, u);
+        if (u && u.email) uMap.set(u.email.toLowerCase().trim(), u);
+      });
+      setUsersMap(uMap);
+    } catch(err) {
+      if (isInitial) toast.show("Failed to load monthly plan requests", "error");
+    } finally {
+      if (isInitial) setLoading(!1);
+    }
+  }, [toast]);
+
+  m.useEffect(() => {
+    loadData(!0);
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      loadData(!1);
+    }, 12000);
+    const handleSync = () => { loadData(!1); };
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", handleSync);
+      window.addEventListener("recharge_request_created", handleSync);
+      window.addEventListener("recharge_status_updated", handleSync);
+      return () => {
+        clearInterval(interval);
+        window.removeEventListener("storage", handleSync);
+        window.removeEventListener("recharge_request_created", handleSync);
+        window.removeEventListener("recharge_status_updated", handleSync);
+      };
+    }
+    return () => clearInterval(interval);
+  }, [loadData]);
+
+  const monthlyReqs = m.useMemo(() => {
+    return requests.filter(f => {
+      if (!f) return !1;
+      const isTopPlan = f.plan_id === "plan_single_top_pro" || (f.plan && (f.plan.id === "plan_single_top_pro" || (f.plan.name && f.plan.name.toLowerCase().includes("top pro"))));
+      const isTopAmt = (Number(f.amount) === 30 || Number(f.amount) === 10 || Number(f.amount) === 20) && (f.is_top_pro === !0 || f.type === "top_pro_boost" || Boolean(f.listing_id || f.listing_title));
+      const isTopType = (f.type === "top_pro_boost" || f.is_top_pro === !0) && (Number(f.amount) === 30 || Number(f.amount) === 10 || Number(f.amount) === 20 || Boolean(f.listing_id || f.listing_title));
+      if (isTopPlan || isTopAmt || isTopType) return !1;
+      return !0;
+    });
+  }, [requests]);
+
+  const filteredReqs = m.useMemo(() => {
+    return monthlyReqs.filter(req => {
+      if (!req) return !1;
+      if (statusFilter !== "all" && req.status !== statusFilter) return !1;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const uName = (req.user?.name || req.user_name || "").toLowerCase();
+        const uEmail = (req.user?.email || req.user_email || "").toLowerCase();
+        const uPhone = (req.user?.phone || req.user_phone || "").toLowerCase();
+        const utr = (req.utr || "").toLowerCase();
+        const pName = (req.plan?.name || req.plan_name || "").toLowerCase();
+        return uName.includes(q) || uEmail.includes(q) || uPhone.includes(q) || utr.includes(q) || pName.includes(q);
+      }
+      return !0;
+    });
+  }, [monthlyReqs, statusFilter, searchQuery]);
+
+  const handleApprove = async (req) => {
+    setIsProcessing(!0);
+    try {
+      await j1(req.id, null, !1);
+      const uName = req.user?.name || req.user_name || req.user_email || "User";
+      toast.show("👑 Monthly PRO Plan approved & activated for " + uName + "!", "success");
+      await loadData(!1);
+      onRefresh && onRefresh();
+    } catch(err) {
+      toast.show(err instanceof Error ? err.message : "Failed to approve request", "error");
+    } finally {
+      setIsProcessing(!1);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!rejectTargetId) return;
+    setIsProcessing(!0);
+    try {
+      const reason = rejectReason.trim() || "Monthly plan payment verification failed / invalid UTR";
+      await _1(rejectTargetId, reason);
+      try {
+        const overrides = JSON.parse(localStorage.getItem("recharge_status_overrides") || "{}");
+        overrides[rejectTargetId] = { status: "rejected", rejection_reason: reason };
+        const activeReq = monthlyReqs.find(f => f.id === rejectTargetId);
+        if (activeReq && activeReq.utr) overrides[activeReq.utr] = { status: "rejected", rejection_reason: reason };
+        localStorage.setItem("recharge_status_overrides", JSON.stringify(overrides));
+      } catch(e) {}
+      toast.show("Monthly plan request rejected", "success");
+      setRejectTargetId(null);
+      setRejectReason("");
+      await loadData(!1);
+      onRefresh && onRefresh();
+    } catch(err) {
+      toast.show(err instanceof Error ? err.message : "Failed to reject request", "error");
+    } finally {
+      setIsProcessing(!1);
+    }
+  };
+
+  const copyUtr = (utr) => {
+    if (!utr) return;
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(utr);
+      setCopiedUtr(utr);
+      toast.show("UTR copied: " + utr, "success");
+      setTimeout(() => setCopiedUtr(null), 2000);
+    }
+  };
+
+  if (loading) return a.jsx("div", { className: "flex justify-center py-12", children: a.jsx(xe, { size: 32 }) });
+
+  const pendingCount = monthlyReqs.filter(r => r.status === "pending").length;
+  const approvedCount = monthlyReqs.filter(r => r.status === "approved").length;
+  const rejectedCount = monthlyReqs.filter(r => r.status === "rejected").length;
+  const totalRevenue = monthlyReqs.filter(r => r.status === "approved").reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+
+  const tabs = [
+    { key: "pending", label: "Pending Requests", count: pendingCount },
+    { key: "approved", label: "Approved Plans", count: approvedCount },
+    { key: "rejected", label: "Rejected", count: rejectedCount },
+    { key: "all", label: "All Requests", count: monthlyReqs.length }
+  ];
+
+  return a.jsxs("div", {
+    className: "space-y-5",
+    children: [
+      a.jsxs("div", {
+        className: "flex items-center justify-between flex-wrap gap-3",
+        children: [
+          a.jsxs("div", {
+            children: [
+              a.jsxs("h1", {
+                className: "text-xl font-bold text-gray-900 flex items-center gap-2",
+                children: [
+                  a.jsx("span", { className: "text-primary-500", children: "👑" }),
+                  " Monthly PRO Plan & Recharge Requests"
+                ]
+              }),
+              a.jsx("p", {
+                className: "text-xs text-gray-500 mt-0.5",
+                children: "Verify ₹112.50 / multi-month PRO subscriptions, check UTR payments, and activate seller memberships."
+              })
+            ]
+          }),
+          a.jsx("button", {
+            onClick: () => loadData(!0),
+            className: "btn-outline text-xs flex items-center gap-1.5",
+            children: [a.jsx("span", { children: "🔄" }), "Refresh Data"]
+          })
+        ]
+      }),
+      a.jsxs("div", {
+        className: "grid grid-cols-2 lg:grid-cols-4 gap-3",
+        children: [
+          a.jsxs("div", {
+            className: "card p-3.5 bg-white border border-amber-200 shadow-2xs rounded-xl",
+            children: [
+              a.jsx("p", { className: "text-[11px] font-semibold text-amber-700 uppercase tracking-wider", children: "Pending Verification" }),
+              a.jsxs("p", { className: "text-2xl font-black text-amber-600 mt-1 flex items-baseline gap-1.5", children: [pendingCount, pendingCount > 0 && a.jsx("span", { className: "inline-block w-2 h-2 rounded-full bg-amber-500 animate-ping" })] })
+            ]
+          }),
+          a.jsxs("div", {
+            className: "card p-3.5 bg-white border border-emerald-200 shadow-2xs rounded-xl",
+            children: [
+              a.jsx("p", { className: "text-[11px] font-semibold text-emerald-700 uppercase tracking-wider", children: "Approved Active Plans" }),
+              a.jsx("p", { className: "text-2xl font-black text-emerald-600 mt-1", children: approvedCount })
+            ]
+          }),
+          a.jsxs("div", {
+            className: "card p-3.5 bg-white border border-blue-200 shadow-2xs rounded-xl",
+            children: [
+              a.jsx("p", { className: "text-[11px] font-semibold text-blue-700 uppercase tracking-wider", children: "Total Revenue" }),
+              a.jsx("p", { className: "text-2xl font-black text-blue-600 mt-1", children: Ze(totalRevenue) })
+            ]
+          }),
+          a.jsxs("div", {
+            className: "card p-3.5 bg-white border border-gray-200 shadow-2xs rounded-xl",
+            children: [
+              a.jsx("p", { className: "text-[11px] font-semibold text-gray-600 uppercase tracking-wider", children: "Total Requests" }),
+              a.jsx("p", { className: "text-2xl font-black text-gray-800 mt-1", children: monthlyReqs.length })
+            ]
+          })
+        ]
+      }),
+      a.jsxs("div", {
+        className: "flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-b border-gray-200 pb-2",
+        children: [
+          a.jsx("div", {
+            className: "flex gap-1 overflow-x-auto",
+            children: tabs.map(tab => a.jsxs("button", {
+              key: tab.key,
+              onClick: () => setStatusFilter(tab.key),
+              className: "px-3.5 py-2 text-xs md:text-sm font-semibold border-b-2 transition-colors whitespace-nowrap flex items-center gap-1.5 " + (statusFilter === tab.key ? "border-primary-500 text-primary-600 font-bold" : "border-transparent text-gray-500 hover:text-gray-700"),
+              children: [
+                tab.label,
+                a.jsx("span", {
+                  className: "px-1.5 py-0.5 rounded-full text-[10px] " + (statusFilter === tab.key ? "bg-primary-100 text-primary-700 font-bold" : "bg-gray-100 text-gray-600"),
+                  children: tab.count
+                })
+              ]
+            }))
+          }),
+          a.jsx("input", {
+            type: "text",
+            value: searchQuery,
+            onChange: ev => setSearchQuery(ev.target.value),
+            placeholder: "Search user, email, UTR...",
+            className: "input max-w-xs text-xs py-1.5"
+          })
+        ]
+      }),
+      filteredReqs.length === 0 ? a.jsx(Te, {
+        icon: a.jsx(br, { className: "w-8 h-8 text-primary-500" }),
+        title: statusFilter === "pending" ? "No Pending Monthly Plan Requests" : statusFilter === "approved" ? "No Approved Monthly Plans" : "No Requests Found",
+        description: statusFilter === "pending" ? "When sellers recharge with ₹112.50 or any PRO plan, their UTR submission will appear here for verification." : "No records match the current filter."
+      }) : a.jsx("div", {
+        className: "grid grid-cols-1 lg:grid-cols-2 gap-4",
+        children: filteredReqs.map(req => {
+          const profile = usersMap.get(req.user_id) || (req.user_email ? usersMap.get(req.user_email.toLowerCase().trim()) : null);
+          const uEmail = profile?.email || req.user?.email || req.user_email || (req.user_id ? "user_" + String(req.user_id).slice(-6) + "@gmail.com" : "user@gmail.com");
+          const uName = profile?.name || profile?.full_name || req.user?.name || req.user_name || uEmail.split("@")[0] || "User";
+          const uPhone = profile?.phone || profile?.whatsapp || req.user?.phone || req.user_phone || "";
+          const planName = req.plan?.name || req.plan_name || (Number(req.amount) >= 300 ? "1 Year PRO" : Number(req.amount) >= 180 ? "6 Months PRO" : Number(req.amount) >= 115 ? "3 Months PRO" : "Monthly PRO (30 Days)");
+          const durationDays = req.plan?.duration_days || (Number(req.amount) >= 300 ? 365 : Number(req.amount) >= 180 ? 180 : Number(req.amount) >= 115 ? 90 : 30);
+          const amt = Number(req.amount) || 112.5;
+          const proofImg = req.payment_proof_url && !req.payment_proof_url.startsWith("meta:") ? req.payment_proof_url : "";
+          const isPending = req.status === "pending";
+          const isApproved = req.status === "approved";
+          const isRejected = req.status === "rejected";
+
+          return a.jsxs("div", {
+            key: req.id,
+            className: "card p-4 border-2 transition-all " + (isPending ? "border-amber-300 bg-amber-50/15" : isApproved ? "border-emerald-100 bg-white" : "border-red-100 bg-white"),
+            children: [
+              a.jsxs("div", {
+                className: "flex items-start justify-between gap-3 mb-3",
+                children: [
+                  a.jsxs("div", {
+                    className: "flex items-center gap-2.5 min-w-0",
+                    children: [
+                      a.jsx("div", {
+                        className: "w-10 h-10 rounded-full bg-gradient-to-tr from-primary-500 to-amber-400 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-sm",
+                        children: (uName.charAt(0) || uEmail.charAt(0) || "U").toUpperCase()
+                      }),
+                      a.jsxs("div", {
+                        className: "min-w-0",
+                        children: [
+                          a.jsx("p", { className: "text-sm font-bold text-gray-900 truncate", children: uName }),
+                          a.jsxs("p", {
+                            className: "text-xs text-primary-600 font-medium truncate flex items-center gap-1",
+                            children: [a.jsx("span", { children: "✉" }), uEmail]
+                          }),
+                          uPhone && a.jsxs("a", {
+                            href: "https://wa.me/" + uPhone.replace(/[^0-9]/g, ""),
+                            target: "_blank",
+                            rel: "noopener noreferrer",
+                            className: "text-[11px] text-emerald-600 font-medium hover:underline flex items-center gap-1 mt-0.5",
+                            children: [a.jsx("span", { children: "💬" }), uPhone]
+                          })
+                        ]
+                      })
+                    ]
+                  }),
+                  a.jsx("span", {
+                    className: "badge shrink-0 " + (isApproved ? "bg-emerald-100 text-emerald-800 font-bold" : isPending ? "bg-amber-100 text-amber-800 font-bold" : "bg-red-100 text-red-800 font-bold"),
+                    children: (req.status || "PENDING").toUpperCase()
+                  })
+                ]
+              }),
+              a.jsxs("div", {
+                className: "bg-slate-50 rounded-xl p-3 border border-slate-200/80 mb-3 space-y-2",
+                children: [
+                  a.jsxs("div", {
+                    className: "flex items-center justify-between flex-wrap gap-1",
+                    children: [
+                      a.jsxs("div", {
+                        className: "flex items-center gap-1.5",
+                        children: [
+                          a.jsx("span", { className: "px-2 py-0.5 rounded-md bg-primary-600 text-white text-[11px] font-bold shadow-2xs", children: "👑 PRO PLAN" }),
+                          a.jsx("span", { className: "text-xs font-bold text-slate-800", children: planName })
+                        ]
+                      }),
+                      a.jsxs("span", {
+                        className: "text-xs font-black text-primary-600 bg-primary-50 px-2 py-0.5 rounded-md border border-primary-200",
+                        children: [Ze(amt)]
+                      })
+                    ]
+                  }),
+                  a.jsxs("div", {
+                    className: "flex items-center justify-between text-[11px] text-slate-600 pt-1 border-t border-slate-200/60",
+                    children: [
+                      a.jsxs("span", { children: ["Validity: ", a.jsx("strong", { children: durationDays + " Days" })] }),
+                      a.jsxs("span", { children: ["Submitted: ", a.jsx("span", { className: "font-medium", children: pr(req.submitted_at || req.created_at) })] })
+                    ]
+                  }),
+                  a.jsxs("div", {
+                    className: "bg-white p-2 rounded-lg border border-slate-200 flex items-center justify-between gap-2 mt-1",
+                    children: [
+                      a.jsxs("div", {
+                        className: "min-w-0 flex items-center gap-1.5",
+                        children: [
+                          a.jsx("span", { className: "text-[10px] font-bold text-slate-400 uppercase", children: "UTR:" }),
+                          a.jsx("span", {
+                            className: "font-mono font-bold text-xs text-slate-900 tracking-wide select-all truncate",
+                            children: req.utr || "—"
+                          })
+                        ]
+                      }),
+                      req.utr && a.jsxs("button", {
+                        type: "button",
+                        onClick: () => copyUtr(req.utr),
+                        className: "btn-outline text-[10px] px-2 py-1 shrink-0 font-bold flex items-center gap-1 hover:bg-slate-100",
+                        children: [
+                          copiedUtr === req.utr ? a.jsx("span", { className: "text-emerald-600", children: "✓ Copied" }) : a.jsx("span", { children: "📋 Copy" })
+                        ]
+                      })
+                    ]
+                  }),
+                  proofImg && a.jsxs("div", {
+                    className: "pt-1 flex items-center gap-2",
+                    children: [
+                      a.jsx("img", {
+                        src: proofImg,
+                        alt: "Payment Receipt",
+                        onClick: () => setPreviewReceiptUrl(proofImg),
+                        className: "w-12 h-12 rounded-lg object-cover border border-slate-300 cursor-pointer hover:opacity-85 shadow-2xs"
+                      }),
+                      a.jsxs("button", {
+                        type: "button",
+                        onClick: () => setPreviewReceiptUrl(proofImg),
+                        className: "text-xs font-semibold text-primary-600 hover:underline flex items-center gap-1",
+                        children: [a.jsx("span", { children: "🔍" }), "View Payment Receipt Screenshot"]
+                      })
+                    ]
+                  })
+                ]
+              }),
+              isPending && a.jsxs("div", {
+                className: "flex gap-2 pt-1 border-t border-gray-100",
+                children: [
+                  a.jsxs("button", {
+                    onClick: () => handleApprove(req),
+                    disabled: isProcessing,
+                    className: "btn-primary text-xs flex-1 py-2 font-bold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-1.5 shadow-sm",
+                    children: [
+                      a.jsx("span", { children: "✓" }),
+                      " Approve & Activate PRO"
+                    ]
+                  }),
+                  a.jsxs("button", {
+                    onClick: () => { setRejectTargetId(req.id); setRejectReason(""); },
+                    disabled: isProcessing,
+                    className: "btn-danger text-xs px-3.5 py-2 font-bold flex items-center justify-center gap-1",
+                    children: [
+                      a.jsx("span", { children: "✕" }),
+                      " Reject"
+                    ]
+                  })
+                ]
+              }),
+              isApproved && a.jsxs("div", {
+                className: "p-2 rounded-lg bg-emerald-50 text-emerald-800 text-xs font-semibold text-center border border-emerald-200 flex items-center justify-center gap-1",
+                children: [
+                  a.jsx("span", { children: "👑" }),
+                  " Approved & PRO Member Badge Active",
+                  req.approved_expiry_date ? " (Valid until " + fr(req.approved_expiry_date) + ")" : ""
+                ]
+              }),
+              isRejected && a.jsxs("div", {
+                className: "p-2 rounded-lg bg-red-50 text-red-700 text-xs text-center border border-red-200",
+                children: [
+                  a.jsx("span", { className: "font-bold", children: "Rejected: " }),
+                  req.rejection_reason || "Declined by Admin"
+                ]
+              })
+            ]
+          });
+        })
+      }),
+      a.jsx(ze, {
+        open: !!rejectTargetId,
+        onClose: () => setRejectTargetId(null),
+        title: "Reject Monthly Plan Request",
+        size: "sm",
+        children: a.jsxs("div", {
+          className: "p-5 space-y-4",
+          children: [
+            a.jsxs("div", {
+              children: [
+                a.jsxs("label", {
+                  className: "label",
+                  children: ["Reason for Rejection ", a.jsx("span", { className: "text-error-500", children: "*" })]
+                }),
+                a.jsx("textarea", {
+                  value: rejectReason,
+                  onChange: ev => setRejectReason(ev.target.value),
+                  placeholder: "e.g. UTR not matched in bank statement, incorrect payment amount...",
+                  className: "input min-h-[80px] resize-y"
+                }),
+                a.jsxs("div", {
+                  className: "flex flex-wrap gap-1.5 mt-2",
+                  children: [
+                    a.jsx("button", {
+                      type: "button",
+                      onClick: () => setRejectReason("Invalid UTR / Transaction ID not found in bank statement"),
+                      className: "text-[11px] px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-md text-gray-700",
+                      children: "Invalid UTR"
+                    }),
+                    a.jsx("button", {
+                      type: "button",
+                      onClick: () => setRejectReason("Payment amount mismatch"),
+                      className: "text-[11px] px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-md text-gray-700",
+                      children: "Amount Mismatch"
+                    }),
+                    a.jsx("button", {
+                      type: "button",
+                      onClick: () => setRejectReason("Duplicate UTR already used"),
+                      className: "text-[11px] px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-md text-gray-700",
+                      children: "Duplicate UTR"
+                    })
+                  ]
+                })
+              ]
+            }),
+            a.jsxs("div", {
+              className: "flex gap-3 pt-2",
+              children: [
+                a.jsx("button", { onClick: () => setRejectTargetId(null), className: "btn-outline flex-1", children: "Cancel" }),
+                a.jsx("button", { onClick: handleReject, disabled: isProcessing, className: "btn-danger flex-1", children: isProcessing ? "Rejecting..." : "Confirm Reject" })
+              ]
+            })
+          ]
+        })
+      }),
+      a.jsx(ze, {
+        open: !!previewReceiptUrl,
+        onClose: () => setPreviewReceiptUrl(null),
+        title: "Payment Receipt Preview",
+        size: "md",
+        children: a.jsxs("div", {
+          className: "p-4 space-y-3 flex flex-col items-center",
+          children: [
+            previewReceiptUrl && a.jsx("img", {
+              src: previewReceiptUrl,
+              alt: "Payment Receipt",
+              className: "max-h-[70vh] w-auto max-w-full rounded-xl object-contain border border-gray-200 shadow-md"
+            }),
+            a.jsxs("div", {
+              className: "flex gap-2 w-full justify-end",
+              children: [
+                a.jsx("a", {
+                  href: previewReceiptUrl,
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                  className: "btn-primary text-xs",
+                  children: "Open in New Tab"
+                }),
+                a.jsx("button", {
+                  onClick: () => setPreviewReceiptUrl(null),
+                  className: "btn-outline text-xs",
+                  children: "Close"
+                })
+              ]
+            })
+          ]
+        })
+      })
+    ]
+  });
 }
 function mj() {
   const [e, setTransactions] = m.useState([]),
