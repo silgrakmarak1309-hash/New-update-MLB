@@ -3223,30 +3223,299 @@ function W1(){const{user:e,profile:t}=Ae(),n=he(),r=ke(),[s,i]=m.useState(""),[l
       })
     ]
   }, E.id);
-})}) ] }),a.jsx(RewardedProAdSection,{user:e,profile:t,showToast:n,navigate:r}),G.length>0&&!l&&a.jsxs("div",{className:"mb-6",children:[a.jsxs("div",{className:"flex items-center justify-between mb-3",children:[a.jsx("h2",{className:"text-sm font-semibold text-gray-800",children:"⭐ Top PRO Listings"}),a.jsxs("button",{type:"button",onClick:()=>{const el=document.getElementById("recent-listings-section");if(el)el.scrollIntoView({behavior:"smooth"});else r("/search");},className:"text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 active:scale-95 px-2.5 py-1 rounded-full border border-primary-200 flex items-center gap-1 shadow-2xs transition-all cursor-pointer",children:["Recent Listings",a.jsx("span",{className:"text-xs leading-none",children:"↓"})]})]}),a.jsx("div",{className:"grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4",children:G.map(E=>a.jsx(ta,{listing:E,seller:E.seller,isFavorited:N.has(E.id),onFavoriteToggle:M},E.id))})]}),a.jsxs("div",{id:"recent-listings-section",className:"scroll-mt-4",children:[a.jsxs("div",{className:"flex items-center justify-between mb-3",children:[a.jsx("h2",{className:"text-sm font-semibold text-gray-800",children:l?`Results for "${l}"`:"Recent Listings"}),a.jsxs("button",{onClick:()=>r("/search"),className:"text-xs text-secondary-600 hover:underline flex items-center gap-0.5",children:["See all ",a.jsx(Rc,{className:"w-3 h-3"})]})]}),_?a.jsx(Oc,{}):recentOnly.length===0?a.jsx(Te,{icon:a.jsx(Re,{className:"w-7 h-7"}),title:"No listings found",message:"Try adjusting your search or location filter."}):a.jsx("div",{className:"grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4",children:recentOnly.map(E=>a.jsx(ta,{listing:E,seller:E.seller,isFavorited:N.has(E.id),onFavoriteToggle:M},E.id))})]})]}),a.jsx(ze,{open:S,onClose:()=>{b(!1);setLs("")},title:"Select Location",children:a.jsxs("div",{className:"p-4 space-y-3",children:[a.jsxs("div",{className:"relative",children:[a.jsx(Rs,{className:"w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"}),a.jsx("input",{type:"text",value:ls,onChange:E=>setLs(E.target.value),placeholder:"Search city or location...",className:"input pl-9 pr-8 text-sm w-full py-2.5 bg-gray-50 focus:bg-white"}),ls&&a.jsx("button",{type:"button",onClick:()=>setLs(""),className:"absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1",children:a.jsx(cn,{className:"w-4 h-4"})})]}),a.jsxs("div",{className:"max-h-[60vh] overflow-y-auto space-y-1 pr-1",children:[(!ls||"all locations".includes(ls.toLowerCase()))&&a.jsxs("button",{onClick:()=>{u("All Locations"),h(""),b(!1),setLs("")},className:`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium transition-colors ${d===""?"bg-primary-50 text-primary-700 font-semibold":"hover:bg-gray-50 text-gray-700"}`,children:[a.jsx(yt,{className:`w-4 h-4 ${d===""?"text-primary-600":"text-gray-400"}`})," All Locations"]}),j.filter(E=>!ls.trim()||E.name.toLowerCase().includes(ls.trim().toLowerCase())||(E.state&&E.state.toLowerCase().includes(ls.trim().toLowerCase()))).sort((A,B)=>A.name.localeCompare(B.name)).map(E=>a.jsxs("button",{onClick:()=>{u(E.name),h(E.id),b(!1),setLs("")},className:`flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-medium transition-colors ${d===E.id?"bg-primary-50 text-primary-700 font-semibold":"hover:bg-gray-50 text-gray-700"}`,children:[a.jsxs("div",{className:"flex items-center gap-3",children:[a.jsx(yt,{className:`w-4 h-4 ${d===E.id?"text-primary-600":"text-gray-400"}`}),a.jsx("span",{children:E.name})]}),E.state&&a.jsx("span",{className:"text-xs text-gray-400 font-normal",children:E.state})]},E.id)),j.filter(E=>!ls.trim()||E.name.toLowerCase().includes(ls.trim().toLowerCase())||(E.state&&E.state.toLowerCase().includes(ls.trim().toLowerCase()))).length===0&&(!ls||!"all locations".includes(ls.toLowerCase()))&&a.jsxs("div",{className:"py-8 text-center text-gray-500",children:[a.jsx(yt,{className:"w-8 h-8 mx-auto mb-2 text-gray-300"}),a.jsx("p",{className:"text-sm font-medium",children:"No locations found"}),a.jsx("p",{className:"text-xs text-gray-400 mt-0.5",children:`No match for "${ls}"`})]})]})]})})]})}function V1(){var Se;const{user:e}=Ae(),t=he(),n=ke(),[r,s]=ev(),[i,l]=m.useState(r.get("q")||""),[o,c]=m.useState(i),[u,d]=m.useState(r.get("category")||""),[h,p]=m.useState(""),[v,x]=m.useState(""),[w,j]=m.useState(""),[f,g]=m.useState(""),[y,_]=m.useState(!1),[k,S]=m.useState("latest"),[b,N]=m.useState([]),[I,P]=m.useState([]),[K,O]=m.useState([]),[M,G]=m.useState(!0),[E,z]=m.useState(!1),[fe,C]=m.useState(new Set);m.useEffect(()=>{Ac().then(P).catch(()=>{}),$c().then(O).catch(()=>{})},[]),m.useEffect(()=>{const U=setTimeout(()=>c(i),300);return()=>clearTimeout(U)},[i]),m.useEffect(()=>{e&&Yp(e.id).then(C).catch(()=>{})},[e]);const T=m.useCallback(async()=>{G(!0);try{const U=await Vp({search:o||void 0,categoryId:u||void 0,locationId:h||void 0,condition:v||void 0,minPrice:w?Number(w):void 0,maxPrice:f?Number(f):void 0,proOnly:y,sortBy:k,limit:50});N(U)}catch{t.show("Failed to load listings","error")}finally{G(!1)}},[o,u,h,v,w,f,y,k,t]);m.useEffect(()=>{T()},[T]);const D=async U=>{if(!e){t.show("Please sign in to save favorites","info"),n("/auth");return}const Mn=fe.has(U);C(Et=>{const Ht=new Set(Et);return Mn?Ht.delete(U):Ht.add(U),Ht});try{Mn?await Ea(e.id,U):await Ca(e.id,U)}catch{t.show("Failed to update favorite","error")}},W=()=>{d(""),p(""),x(""),j(""),g(""),_(!1),S("latest")},V=[u,h,v,w,f].filter(Boolean).length+(y?1:0);return a.jsxs("div",{className:"min-h-screen pb-20 md:pb-8",children:[a.jsx(Wp,{search:i,setSearch:l,selectedLocation:((Se=K.find(U=>U.id===h))==null?void 0:Se.name)||"All Locations",onLocationClick:()=>z(!0)}),a.jsxs("div",{className:"max-w-7xl mx-auto px-4 py-4",children:[a.jsxs("div",{className:"flex gap-2 overflow-x-auto no-scrollbar mb-4",children:[a.jsx("button",{onClick:()=>d(""),className:`shrink-0 px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${u?"bg-white border border-gray-200 text-gray-600 hover:bg-gray-50":"bg-primary-500 text-white"}`,children:"All"}),I.map(U=>a.jsx("button",{onClick:()=>d(U.id===u?"":U.id),className:`shrink-0 px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${u===U.id?"bg-primary-500 text-white":"bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"}`,children:U.name},U.id))]}),a.jsxs("div",{className:"flex items-center justify-between mb-4 gap-2",children:[a.jsxs("button",{onClick:()=>z(!0),className:"btn-outline text-xs py-2 relative",children:[a.jsx(yd,{className:"w-3.5 h-3.5"})," Filters",V>0&&a.jsx("span",{className:"absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary-500 text-white text-[10px] flex items-center justify-center",children:V})]}),a.jsxs("select",{value:k,onChange:U=>S(U.target.value),className:"input text-xs py-2 w-auto max-w-[180px]",children:[a.jsx("option",{value:"latest",children:"Latest"}),a.jsx("option",{value:"price_asc",children:"Price: Low to High"}),a.jsx("option",{value:"price_desc",children:"Price: High to Low"}),a.jsx("option",{value:"featured",children:"Featured First"})]})]}),M?a.jsx(Oc,{}):b.length===0?a.jsx(Te,{icon:a.jsx(yd,{className:"w-7 h-7"}),title:"No listings found",message:"Try adjusting your filters or search keywords.",action:V>0&&a.jsx("button",{onClick:W,className:"btn-outline text-xs",children:"Clear Filters"})}):a.jsx("div",{className:"grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4",children:b.map(U=>a.jsx(ta,{listing:U,seller:U.seller,isFavorited:fe.has(U.id),onFavoriteToggle:D},U.id))})]}),a.jsx(ze,{open:E,onClose:()=>z(!1),title:"Filters",children:a.jsxs("div",{className:"p-5 space-y-5",children:[a.jsxs("div",{children:[a.jsx("label",{className:"label",children:"Location"}),a.jsxs("select",{value:h,onChange:U=>p(U.target.value),className:"input",children:[a.jsx("option",{value:"",children:"All Locations"}),K.map(U=>a.jsx("option",{value:U.id,children:U.name},U.id))]})]}),a.jsxs("div",{children:[a.jsx("label",{className:"label",children:"Search Address / Area / Landmark"}),a.jsx("input",{type:"text",value:i,onChange:U=>l(U.target.value),placeholder:"e.g. Rongara, Tura, Bazar, Road...",className:"input"})]}),a.jsxs("div",{children:[a.jsx("label",{className:"label",children:"Condition"}),a.jsxs("select",{value:v,onChange:U=>x(U.target.value),className:"input",children:[a.jsx("option",{value:"",children:"Any"}),a.jsx("option",{value:"new",children:"New"}),a.jsx("option",{value:"used",children:"Used"}),a.jsx("option",{value:"refurbished",children:"Refurbished"})]})]}),a.jsxs("div",{className:"grid grid-cols-2 gap-3",children:[a.jsxs("div",{children:[a.jsx("label",{className:"label",children:"Min Price"}),a.jsx("input",{type:"number",value:w,onChange:U=>j(U.target.value),placeholder:"0",className:"input"})]}),a.jsxs("div",{children:[a.jsx("label",{className:"label",children:"Max Price"}),a.jsx("input",{type:"number",value:f,onChange:U=>g(U.target.value),placeholder:"∞",className:"input"})]})]}),a.jsxs("label",{className:"flex items-center gap-2 cursor-pointer",children:[a.jsx("input",{type:"checkbox",checked:y,onChange:U=>_(U.target.checked),className:"w-4 h-4 rounded accent-primary-500"}),a.jsx("span",{className:"text-sm text-gray-700",children:"PRO sellers only"})]}),a.jsxs("div",{className:"flex gap-3 pt-2",children:[a.jsxs("button",{onClick:W,className:"btn-outline flex-1",children:[a.jsx(Un,{className:"w-4 h-4"})," Clear"]}),a.jsx("button",{onClick:()=>z(!1),className:"btn-primary flex-1",children:"Show Results"})]})]})})]})}function q1(){var _,k;const{id:e}=tp(),t=ke(),{user:n}=Ae(),r=he(),[s,i]=m.useState(null),[l,o]=m.useState(!0),[c,u]=m.useState(!1),[d,h]=m.useState(0),[p,v]=m.useState(!1),x=m.useCallback(async()=>{if(e){o(!0);try{const S=await o1(e);i(S),n&&S&&u(await I1(n.id,S.id))}catch{r.show("Failed to load listing","error")}finally{o(!1)}}},[e,n,r]);m.useEffect(()=>{x()},[x]);const w=async()=>{if(!n){r.show("Please sign in to save favorites","info"),t("/auth");return}if(!s)return;const S=c;u(!S);try{S?await Ea(n.id,s.id):await Ca(n.id,s.id)}catch{u(S),r.show("Failed to update favorite","error")}},j=async()=>{const S=window.location.href;if(navigator.share)try{await navigator.share({title:s==null?void 0:s.title,url:S})}catch{}else navigator.clipboard.writeText(S),r.show("Link copied to clipboard","success")},f=async()=>{
-    if(!n){
-      r.show("Please sign in to chat with seller","info");
+})}) ] }),a.jsx(RewardedProAdSection,{user:e,profile:t,showToast:n,navigate:r}),G.length>0&&!l&&a.jsxs("div",{className:"mb-6",children:[a.jsxs("div",{className:"flex items-center justify-between mb-3",children:[a.jsx("h2",{className:"text-sm font-semibold text-gray-800",children:"⭐ Top PRO Listings"}),a.jsxs("button",{type:"button",onClick:()=>{const el=document.getElementById("recent-listings-section");if(el)el.scrollIntoView({behavior:"smooth"});else r("/search");},className:"text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 active:scale-95 px-2.5 py-1 rounded-full border border-primary-200 flex items-center gap-1 shadow-2xs transition-all cursor-pointer",children:["Recent Listings",a.jsx("span",{className:"text-xs leading-none",children:"↓"})]})]}),a.jsx("div",{className:"grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4",children:G.map(E=>a.jsx(ta,{listing:E,seller:E.seller,isFavorited:N.has(E.id),onFavoriteToggle:M},E.id))})]}),a.jsxs("div",{id:"recent-listings-section",className:"scroll-mt-4",children:[a.jsxs("div",{className:"flex items-center justify-between mb-3",children:[a.jsx("h2",{className:"text-sm font-semibold text-gray-800",children:l?`Results for "${l}"`:"Recent Listings"}),a.jsxs("button",{onClick:()=>r("/search"),className:"text-xs text-secondary-600 hover:underline flex items-center gap-0.5",children:["See all ",a.jsx(Rc,{className:"w-3 h-3"})]})]}),_?a.jsx(Oc,{}):recentOnly.length===0?a.jsx(Te,{icon:a.jsx(Re,{className:"w-7 h-7"}),title:"No listings found",message:"Try adjusting your search or location filter."}):a.jsx("div",{className:"grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4",children:recentOnly.map(E=>a.jsx(ta,{listing:E,seller:E.seller,isFavorited:N.has(E.id),onFavoriteToggle:M},E.id))})]})]}),a.jsx(ze,{open:S,onClose:()=>{b(!1);setLs("")},title:"Select Location",children:a.jsxs("div",{className:"p-4 space-y-3",children:[a.jsxs("div",{className:"relative",children:[a.jsx(Rs,{className:"w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"}),a.jsx("input",{type:"text",value:ls,onChange:E=>setLs(E.target.value),placeholder:"Search city or location...",className:"input pl-9 pr-8 text-sm w-full py-2.5 bg-gray-50 focus:bg-white"}),ls&&a.jsx("button",{type:"button",onClick:()=>setLs(""),className:"absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1",children:a.jsx(cn,{className:"w-4 h-4"})})]}),a.jsxs("div",{className:"max-h-[60vh] overflow-y-auto space-y-1 pr-1",children:[(!ls||"all locations".includes(ls.toLowerCase()))&&a.jsxs("button",{onClick:()=>{u("All Locations"),h(""),b(!1),setLs("")},className:`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium transition-colors ${d===""?"bg-primary-50 text-primary-700 font-semibold":"hover:bg-gray-50 text-gray-700"}`,children:[a.jsx(yt,{className:`w-4 h-4 ${d===""?"text-primary-600":"text-gray-400"}`})," All Locations"]}),j.filter(E=>!ls.trim()||E.name.toLowerCase().includes(ls.trim().toLowerCase())||(E.state&&E.state.toLowerCase().includes(ls.trim().toLowerCase()))).sort((A,B)=>A.name.localeCompare(B.name)).map(E=>a.jsxs("button",{onClick:()=>{u(E.name),h(E.id),b(!1),setLs("")},className:`flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-medium transition-colors ${d===E.id?"bg-primary-50 text-primary-700 font-semibold":"hover:bg-gray-50 text-gray-700"}`,children:[a.jsxs("div",{className:"flex items-center gap-3",children:[a.jsx(yt,{className:`w-4 h-4 ${d===E.id?"text-primary-600":"text-gray-400"}`}),a.jsx("span",{children:E.name})]}),E.state&&a.jsx("span",{className:"text-xs text-gray-400 font-normal",children:E.state})]},E.id)),j.filter(E=>!ls.trim()||E.name.toLowerCase().includes(ls.trim().toLowerCase())||(E.state&&E.state.toLowerCase().includes(ls.trim().toLowerCase()))).length===0&&(!ls||!"all locations".includes(ls.toLowerCase()))&&a.jsxs("div",{className:"py-8 text-center text-gray-500",children:[a.jsx(yt,{className:"w-8 h-8 mx-auto mb-2 text-gray-300"}),a.jsx("p",{className:"text-sm font-medium",children:"No locations found"}),a.jsx("p",{className:"text-xs text-gray-400 mt-0.5",children:`No match for "${ls}"`})]})]})]})})]})}function V1(){var Se;const{user:e}=Ae(),t=he(),n=ke(),[r,s]=ev(),[i,l]=m.useState(r.get("q")||""),[o,c]=m.useState(i),[u,d]=m.useState(r.get("category")||""),[h,p]=m.useState(""),[v,x]=m.useState(""),[w,j]=m.useState(""),[f,g]=m.useState(""),[y,_]=m.useState(!1),[k,S]=m.useState("latest"),[b,N]=m.useState([]),[I,P]=m.useState([]),[K,O]=m.useState([]),[M,G]=m.useState(!0),[E,z]=m.useState(!1),[fe,C]=m.useState(new Set);m.useEffect(()=>{Ac().then(P).catch(()=>{}),$c().then(O).catch(()=>{})},[]),m.useEffect(()=>{const U=setTimeout(()=>c(i),300);return()=>clearTimeout(U)},[i]),m.useEffect(()=>{e&&Yp(e.id).then(C).catch(()=>{})},[e]);const T=m.useCallback(async()=>{G(!0);try{const U=await Vp({search:o||void 0,categoryId:u||void 0,locationId:h||void 0,condition:v||void 0,minPrice:w?Number(w):void 0,maxPrice:f?Number(f):void 0,proOnly:y,sortBy:k,limit:50});N(U)}catch{t.show("Failed to load listings","error")}finally{G(!1)}},[o,u,h,v,w,f,y,k,t]);m.useEffect(()=>{T()},[T]);const D=async U=>{if(!e){t.show("Please sign in to save favorites","info"),n("/auth");return}const Mn=fe.has(U);C(Et=>{const Ht=new Set(Et);return Mn?Ht.delete(U):Ht.add(U),Ht});try{Mn?await Ea(e.id,U):await Ca(e.id,U)}catch{t.show("Failed to update favorite","error")}},W=()=>{d(""),p(""),x(""),j(""),g(""),_(!1),S("latest")},V=[u,h,v,w,f].filter(Boolean).length+(y?1:0);return a.jsxs("div",{className:"min-h-screen pb-20 md:pb-8",children:[a.jsx(Wp,{search:i,setSearch:l,selectedLocation:((Se=K.find(U=>U.id===h))==null?void 0:Se.name)||"All Locations",onLocationClick:()=>z(!0)}),a.jsxs("div",{className:"max-w-7xl mx-auto px-4 py-4",children:[a.jsxs("div",{className:"flex gap-2 overflow-x-auto no-scrollbar mb-4",children:[a.jsx("button",{onClick:()=>d(""),className:`shrink-0 px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${u?"bg-white border border-gray-200 text-gray-600 hover:bg-gray-50":"bg-primary-500 text-white"}`,children:"All"}),I.map(U=>a.jsx("button",{onClick:()=>d(U.id===u?"":U.id),className:`shrink-0 px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${u===U.id?"bg-primary-500 text-white":"bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"}`,children:U.name},U.id))]}),a.jsxs("div",{className:"flex items-center justify-between mb-4 gap-2",children:[a.jsxs("button",{onClick:()=>z(!0),className:"btn-outline text-xs py-2 relative",children:[a.jsx(yd,{className:"w-3.5 h-3.5"})," Filters",V>0&&a.jsx("span",{className:"absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary-500 text-white text-[10px] flex items-center justify-center",children:V})]}),a.jsxs("select",{value:k,onChange:U=>S(U.target.value),className:"input text-xs py-2 w-auto max-w-[180px]",children:[a.jsx("option",{value:"latest",children:"Latest"}),a.jsx("option",{value:"price_asc",children:"Price: Low to High"}),a.jsx("option",{value:"price_desc",children:"Price: High to Low"}),a.jsx("option",{value:"featured",children:"Featured First"})]})]}),M?a.jsx(Oc,{}):b.length===0?a.jsx(Te,{icon:a.jsx(yd,{className:"w-7 h-7"}),title:"No listings found",message:"Try adjusting your filters or search keywords.",action:V>0&&a.jsx("button",{onClick:W,className:"btn-outline text-xs",children:"Clear Filters"})}):a.jsx("div",{className:"grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4",children:b.map(U=>a.jsx(ta,{listing:U,seller:U.seller,isFavorited:fe.has(U.id),onFavoriteToggle:D},U.id))})]}),a.jsx(ze,{open:E,onClose:()=>z(!1),title:"Filters",children:a.jsxs("div",{className:"p-5 space-y-5",children:[a.jsxs("div",{children:[a.jsx("label",{className:"label",children:"Location"}),a.jsxs("select",{value:h,onChange:U=>p(U.target.value),className:"input",children:[a.jsx("option",{value:"",children:"All Locations"}),K.map(U=>a.jsx("option",{value:U.id,children:U.name},U.id))]})]}),a.jsxs("div",{children:[a.jsx("label",{className:"label",children:"Search Address / Area / Landmark"}),a.jsx("input",{type:"text",value:i,onChange:U=>l(U.target.value),placeholder:"e.g. Rongara, Tura, Bazar, Road...",className:"input"})]}),a.jsxs("div",{children:[a.jsx("label",{className:"label",children:"Condition"}),a.jsxs("select",{value:v,onChange:U=>x(U.target.value),className:"input",children:[a.jsx("option",{value:"",children:"Any"}),a.jsx("option",{value:"new",children:"New"}),a.jsx("option",{value:"used",children:"Used"}),a.jsx("option",{value:"refurbished",children:"Refurbished"})]})]}),a.jsxs("div",{className:"grid grid-cols-2 gap-3",children:[a.jsxs("div",{children:[a.jsx("label",{className:"label",children:"Min Price"}),a.jsx("input",{type:"number",value:w,onChange:U=>j(U.target.value),placeholder:"0",className:"input"})]}),a.jsxs("div",{children:[a.jsx("label",{className:"label",children:"Max Price"}),a.jsx("input",{type:"number",value:f,onChange:U=>g(U.target.value),placeholder:"∞",className:"input"})]})]}),a.jsxs("label",{className:"flex items-center gap-2 cursor-pointer",children:[a.jsx("input",{type:"checkbox",checked:y,onChange:U=>_(U.target.checked),className:"w-4 h-4 rounded accent-primary-500"}),a.jsx("span",{className:"text-sm text-gray-700",children:"PRO sellers only"})]}),a.jsxs("div",{className:"flex gap-3 pt-2",children:[a.jsxs("button",{onClick:W,className:"btn-outline flex-1",children:[a.jsx(Un,{className:"w-4 h-4"})," Clear"]}),a.jsx("button",{onClick:()=>z(!1),className:"btn-primary flex-1",children:"Show Results"})]})]})})]})}function q1(){
+  var _,k;
+  const { id: e } = tp(),
+        t = ke(),
+        { user: n } = Ae(),
+        r = he(),
+        [s, i] = m.useState(null),
+        [l, o] = m.useState(!0),
+        [c, u] = m.useState(!1),
+        [d, h] = m.useState(0),
+        [p, v] = m.useState(!1);
+
+  const x = m.useCallback(async () => {
+    if (e) {
+      o(!0);
+      try {
+        const S = await o1(e);
+        i(S);
+        if (n && S) u(await I1(n.id, S.id));
+      } catch {
+        r.show("Failed to load listing", "error");
+      } finally {
+        o(!1);
+      }
+    }
+  }, [e, n, r]);
+
+  m.useEffect(() => { x(); }, [x]);
+
+  const w = async () => {
+    if (!n) {
+      r.show("Please sign in to save favorites", "info");
       t("/auth");
       return;
     }
-    if(!s) return;
+    if (!s) return;
+    const S = c;
+    u(!S);
+    try {
+      if (S) await Ea(n.id, s.id);
+      else await Ca(n.id, s.id);
+    } catch {
+      u(S);
+      r.show("Failed to update favorite", "error");
+    }
+  };
+
+  const j = async () => {
+    const S = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: s?.title, url: S });
+      } catch {}
+    } else {
+      navigator.clipboard.writeText(S);
+      r.show("Link copied to clipboard", "success");
+    }
+  };
+
+  const g = () => {
+    if (!s) return;
+    const rawPh = s.whatsapp || s.phone || (s.seller && (s.seller.whatsapp || s.seller.phone)) || "";
+    const ph = String(rawPh).replace(/[^0-9]/g, "");
+    if (!ph) {
+      r.show("Seller WhatsApp/Phone number is not available", "error");
+      return;
+    }
+    const fullPh = ph.length === 10 ? "91" + ph : ph;
+    const msg = encodeURIComponent("Hello, I am interested in your listing: " + (s.title || "item") + " (Price: " + Ze(s.price) + ") on Meri Local Bazaar.");
+    const waUrl = "https://api.whatsapp.com/send?phone=" + fullPh + "&text=" + msg;
+    try {
+      window.open(waUrl, "_blank");
+    } catch {
+      window.location.href = waUrl;
+    }
+  };
+
+  const f = async () => {
+    if (!n) {
+      r.show("Please sign in to chat with seller", "info");
+      t("/auth");
+      return;
+    }
+    if (!s) return;
     const sellerId = (s.seller && s.seller.id) || s.user_id;
-    if(!sellerId){
-      r.show("Seller details not available","error");
+    if (!sellerId) {
+      g();
       return;
     }
-    if(n.id === sellerId){
-      r.show("This is your own listing","info");
+    if (n.id === sellerId) {
+      r.show("This is your own listing", "info");
       return;
     }
-    try{
+    try {
       const S = await U1(s.id, n.id, sellerId);
-      t(`/messages/${S}`);
-    }catch(err){
+      t("/messages/" + S);
+    } catch (err) {
       console.error("Chat navigation err:", err);
-      r.show("Failed to start chat","error");
+      g();
     }
-  },g=()=>{if(!s)return;const ph=(s.whatsapp||s.phone||(s.seller&&s.seller.phone)||"").replace(/[^0-9]/g,"");if(!ph){r.show("Seller phone number not available","error");return}const fullPh=ph.length===10?"91"+ph:ph;const S=encodeURIComponent(`Hello, I am interested in your listing: ${s.title} (Price: ${Ze(s.price)}) on Meri Local Bazaar.`);const waUrl=`https://api.whatsapp.com/send?phone=${fullPh}&text=${S}`;try{window.location.href=waUrl}catch(err){window.open(waUrl,"_blank")}};if(l)return a.jsx("div",{className:"min-h-screen flex items-center justify-center",children:a.jsx("div",{className:"animate-spin w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full"})});if(!s)return a.jsxs("div",{className:"min-h-screen flex flex-col items-center justify-center gap-4",children:[a.jsx(Re,{className:"w-12 h-12 text-gray-300"}),a.jsx("p",{className:"text-gray-500",children:"Listing not found"}),a.jsx(St,{to:"/",className:"btn-primary",children:"Go Home"})]});const y=Ct(s.seller);return a.jsxs("div",{className:"min-h-screen pb-24 md:pb-8 bg-gray-50",children:[a.jsxs("div",{className:"sticky top-0 z-40 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between",children:[a.jsx("button",{onClick:()=>t(-1),className:"p-2 -ml-2 rounded-lg hover:bg-gray-100",children:a.jsx(gt,{className:"w-5 h-5"})}),a.jsxs("div",{className:"flex items-center gap-1",children:[a.jsx("button",{onClick:w,className:"p-2 rounded-lg hover:bg-gray-100",children:a.jsx(Ps,{className:`w-5 h-5 ${c?"fill-primary-500 text-primary-500":"text-gray-600"}`})}),a.jsx("button",{onClick:j,className:"p-2 rounded-lg hover:bg-gray-100",children:a.jsx(Kw,{className:"w-5 h-5 text-gray-600"})})]})]}),a.jsxs("div",{className:"max-w-3xl mx-auto px-4 py-4",children:[a.jsx("div",{className:"relative rounded-2xl overflow-hidden bg-gray-100 aspect-[4/3] mb-4",children:(s.images&&s.images.length>0)?a.jsxs(a.Fragment,{children:[a.jsx("img",{src:s.images[d],alt:s.title,className:"w-full h-full object-cover cursor-zoom-in",onClick:()=>v(!0)}),s.images.length>1&&a.jsxs(a.Fragment,{children:[a.jsx("button",{onClick:()=>h(S=>(S-1+s.images.length)%s.images.length),className:"absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 flex items-center justify-center hover:bg-white",children:a.jsx(Lw,{className:"w-5 h-5"})}),a.jsx("button",{onClick:()=>h(S=>(S+1)%s.images.length),className:"absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 flex items-center justify-center hover:bg-white",children:a.jsx(Rc,{className:"w-5 h-5"})}),a.jsxs("div",{className:"absolute bottom-3 left-1/2 -translate-x-1/2 badge bg-black/60 text-white",children:[d+1," / ",s.images.length]})]})]}):a.jsx("div",{className:"w-full h-full flex items-center justify-center text-gray-300",children:a.jsx(Re,{className:"w-12 h-12"})})}),s.images.length>1&&a.jsx("div",{className:"flex gap-2 mb-4 overflow-x-auto no-scrollbar",children:s.images.map((S,b)=>a.jsx("button",{onClick:()=>h(b),className:`w-16 h-16 rounded-lg overflow-hidden shrink-0 border-2 ${b===d?"border-primary-500":"border-transparent"}`,children:a.jsx("img",{src:S,alt:"",className:"w-full h-full object-cover"})},b))}),a.jsxs("div",{className:"card p-4 mb-4",children:[a.jsxs("div",{className:"flex items-start justify-between gap-3 mb-2",children:[a.jsx("h1",{className:"text-lg font-bold text-gray-900 flex-1",children:s.title}),s.is_featured&&a.jsxs("span",{className:"badge bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 font-bold shrink-0 shadow-sm flex items-center gap-1",children:[a.jsx(Tc,{className:"w-3.5 h-3.5 fill-slate-950 text-slate-950"}),"⭐ TOP PRO Listing"]})]}),a.jsx("p",{className:"text-2xl font-bold text-primary-600",children:Ze(s.price)}),a.jsxs("div",{className:"flex flex-wrap gap-2 mt-3 text-xs",children:[s.category&&a.jsx("span",{className:"badge bg-gray-100 text-gray-600",children:s.category.name}),a.jsx("span",{className:"badge bg-gray-100 text-gray-600 capitalize",children:s.condition}),a.jsxs("span",{className:"badge bg-gray-100 text-gray-600 flex items-center gap-0.5",children:[a.jsx(yt,{className:"w-3 h-3"})," ",formatListingLocation(s)]}),a.jsxs("span",{className:"badge bg-gray-100 text-gray-600 flex items-center gap-0.5",children:[a.jsx(Pw,{className:"w-3 h-3"})," ",Ar(s.created_at)]})]})]}),s.description&&a.jsxs("div",{className:"card p-4 mb-4",children:[a.jsx("h2",{className:"text-sm font-semibold text-gray-800 mb-2",children:"Description"}),a.jsx("p",{className:"text-sm text-gray-600 whitespace-pre-wrap leading-relaxed",children:s.description})]}),s.seller&&a.jsxs("div",{className:"card p-4 mb-4",children:[a.jsx("h2",{className:"text-sm font-semibold text-gray-800 mb-3",children:"Seller Information"}),a.jsxs("div",{className:"flex items-center gap-3",children:[a.jsx("div",{className:"w-12 h-12 rounded-full bg-gray-100 overflow-hidden shrink-0",children:s.seller.avatar_url?a.jsx("img",{src:s.seller.avatar_url,alt:"",className:"w-full h-full object-cover"}):a.jsx("div",{className:"w-full h-full flex items-center justify-center text-gray-400 font-medium",children:(k=s.seller.name)==null?void 0:k.charAt(0).toUpperCase()})}),a.jsxs("div",{className:"flex-1 min-w-0",children:[a.jsxs("div",{className:"flex items-center gap-1.5",children:[a.jsx("p",{className:"font-medium text-sm text-gray-900 truncate",children:s.seller.name}),y&&a.jsxs("span",{className:"badge bg-primary-50 text-primary-600 shrink-0",children:[a.jsx(Op,{className:"w-3 h-3"})," PRO"]})]}),a.jsxs("p",{className:"text-xs text-gray-500 mt-0.5",children:["Member since ",fr(s.seller.created_at)]}),s.seller.city&&a.jsxs("p",{className:"text-xs text-gray-500 flex items-center gap-0.5 mt-0.5",children:[a.jsx(yt,{className:"w-3 h-3"})," ",s.seller.city]})]})]})]}),a.jsxs("div",{className:"card p-4 mb-4 bg-amber-50 border-amber-100",children:[a.jsxs("div",{className:"flex items-center gap-2 mb-2",children:[a.jsx(Gw,{className:"w-4 h-4 text-amber-600"}),a.jsx("h2",{className:"text-sm font-semibold text-amber-800",children:"Safety Tips"})]}),a.jsxs("ul",{className:"text-xs text-amber-700 space-y-1 list-disc list-inside",children:[a.jsx("li",{children:"Never send money before verifying the item in person."}),a.jsx("li",{children:"Meet in a safe, public location."}),a.jsx("li",{children:"Verify seller identity and product condition before buying."})]})]})]}),a.jsxs("div",{className:"fixed bottom-0 left-0 right-0 md:relative md:bottom-auto bg-white border-t border-gray-100 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0.75rem))] flex gap-2 z-40 shadow-lg",children:[(n&&(n.id===s.user_id||(s.seller&&n.id===s.seller.id)||n.role==="super_admin"||n.role==="admin"||n.email==="silgrakmarak1309@gmail.com"||n.email==="grejamarak@gmail.com"||n.email==="megamarak8@gmail.com"||!s.user_id))?a.jsxs(a.Fragment,{children:[a.jsxs(St,{to:"/my-ads",className:"btn-outline flex-1 text-center py-2.5",children:[a.jsx(Re,{className:"w-4 h-4 mr-1.5"}),"Manage My Ads"]}),a.jsxs("button",{onClick:async()=>{if(confirm("Are you sure you want to delete this listing?")){await u1(s.id);r.show("Listing removed successfully","success");t("/my-ads")}},className:"btn-danger flex-1 py-2.5",children:[a.jsx(Un,{className:"w-4 h-4 mr-1.5"}),"Delete Listing"]})]}):a.jsxs(a.Fragment,{children:[a.jsxs("button",{onClick:g,type:"button",className:"btn-outline flex-1 text-green-600 border-green-200 hover:bg-green-50 font-semibold active:scale-95 transition-transform",children:[a.jsx(wo,{className:"w-4 h-4"})," WhatsApp"]})]}),a.jsxs("a",{href:a1(s.phone||(s.seller&&s.seller.phone)),className:"btn-outline flex-1 text-secondary-600 border-secondary-200 hover:bg-secondary-50 font-semibold active:scale-95 transition-transform",children:[a.jsx(Dp,{className:"w-4 h-4"})," Call"]}),a.jsxs("button",{onClick:f,type:"button",className:"btn-primary flex-1 font-semibold active:scale-95 transition-transform",children:[a.jsx(wo,{className:"w-4 h-4"})," Chat"]})]}),p&&a.jsxs("div",{className:"fixed inset-0 z-[60] bg-black/90 flex items-center justify-center",onClick:()=>v(!1),children:[a.jsx("button",{className:"absolute top-4 right-4 text-white p-2",onClick:()=>v(!1),children:a.jsx(Un,{className:"w-6 h-6"})}),a.jsx("img",{src:s.images[d],alt:"",className:"max-w-full max-h-full object-contain"})]})]})}function K1(){const{signIn:e,signUp:t,resetPassword:n,refreshProfile:rf,user:currU}=Ae(),r=he(),s=ke();m.useEffect(()=>{if(currU)s("/")},[currU,s]);const[i,l]=m.useState("signin"),[o,c]=m.useState(""),[u,d]=m.useState(""),[h,p]=m.useState(""),[v,x]=m.useState(!1),[showGoogleModal,setShowGoogleModal]=m.useState(!1),[customEmail,setCustomEmail]=m.useState(""),[customName,setCustomName]=m.useState("");const performGoogleSignIn=async(targetEmail,targetName)=>{
+  };
+
+  if (l) return a.jsx("div", { className: "min-h-screen flex items-center justify-center", children: a.jsx("div", { className: "animate-spin w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full" }) });
+  if (!s) return a.jsxs("div", { className: "min-h-screen flex flex-col items-center justify-center gap-4", children: [a.jsx(Re, { className: "w-12 h-12 text-gray-300" }), a.jsx("p", { className: "text-gray-500", children: "Listing not found" }), a.jsx(St, { to: "/", className: "btn-primary", children: "Go Home" })] });
+
+  const y = Ct(s.seller);
+  const isOwner = Boolean(n && s && ((s.user_id && n.id === s.user_id) || (s.seller && s.seller.id && n.id === s.seller.id)));
+  const isAdmin = Boolean(n && (n.role === "super_admin" || n.role === "admin" || n.email === "silgrakmarak1309@gmail.com" || n.email === "grejamarak@gmail.com" || n.email === "megamarak8@gmail.com"));
+  const phoneTarget = s.phone || s.whatsapp || (s.seller && (s.seller.phone || s.seller.whatsapp)) || "";
+
+  return a.jsxs("div", {
+    className: "min-h-screen pb-24 md:pb-8 bg-gray-50",
+    children: [
+      a.jsxs("div", {
+        className: "sticky top-0 z-40 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between",
+        children: [
+          a.jsx("button", { onClick: () => t(-1), className: "p-2 -ml-2 rounded-lg hover:bg-gray-100", children: a.jsx(gt, { className: "w-5 h-5" }) }),
+          a.jsxs("div", {
+            className: "flex items-center gap-1",
+            children: [
+              a.jsx("button", { onClick: w, className: "p-2 rounded-lg hover:bg-gray-100", children: a.jsx(Ps, { className: "w-5 h-5 " + (c ? "fill-primary-500 text-primary-500" : "text-gray-600") }) }),
+              a.jsx("button", { onClick: j, className: "p-2 rounded-lg hover:bg-gray-100", children: a.jsx(Kw, { className: "w-5 h-5 text-gray-600" }) })
+            ]
+          })
+        ]
+      }),
+      a.jsxs("div", {
+        className: "max-w-3xl mx-auto px-4 py-4",
+        children: [
+          a.jsx("div", {
+            className: "relative rounded-2xl overflow-hidden bg-gray-100 aspect-[4/3] mb-4",
+            children: s.images && s.images.length > 0 ? a.jsxs(a.Fragment, {
+              children: [
+                a.jsx("img", { src: s.images[d], alt: s.title, className: "w-full h-full object-cover cursor-zoom-in", onClick: () => v(!0) }),
+                s.images.length > 1 && a.jsxs(a.Fragment, {
+                  children: [
+                    a.jsx("button", { onClick: () => h(S => (S - 1 + s.images.length) % s.images.length), className: "absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 flex items-center justify-center hover:bg-white", children: a.jsx(Lw, { className: "w-5 h-5" }) }),
+                    a.jsx("button", { onClick: () => h(S => (S + 1) % s.images.length), className: "absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 flex items-center justify-center hover:bg-white", children: a.jsx(Rc, { className: "w-5 h-5" }) }),
+                    a.jsxs("div", { className: "absolute bottom-3 left-1/2 -translate-x-1/2 badge bg-black/60 text-white", children: [d + 1, " / ", s.images.length] })
+                  ]
+                })
+              ]
+            }) : a.jsx("div", { className: "w-full h-full flex items-center justify-center text-gray-300", children: a.jsx(Re, { className: "w-12 h-12" }) })
+          }),
+          s.images.length > 1 && a.jsx("div", {
+            className: "flex gap-2 mb-4 overflow-x-auto no-scrollbar",
+            children: s.images.map((S, b) => a.jsx("button", { onClick: () => h(b), className: "w-16 h-16 rounded-lg overflow-hidden shrink-0 border-2 " + (b === d ? "border-primary-500" : "border-transparent"), children: a.jsx("img", { src: S, alt: "", className: "w-full h-full object-cover" }) }, b))
+          }),
+          a.jsxs("div", {
+            className: "card p-4 mb-4",
+            children: [
+              a.jsxs("div", {
+                className: "flex items-start justify-between gap-3 mb-2",
+                children: [
+                  a.jsx("h1", { className: "text-lg font-bold text-gray-900 flex-1", children: s.title }),
+                  s.is_featured && a.jsxs("span", {
+                    className: "badge bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 font-bold shrink-0 shadow-sm flex items-center gap-1",
+                    children: [a.jsx(Tc, { className: "w-3.5 h-3.5 fill-slate-950 text-slate-950" }), "⭐ TOP PRO Listing"]
+                  })
+                ]
+              }),
+              a.jsx("p", { className: "text-2xl font-bold text-primary-600", children: Ze(s.price) }),
+              a.jsxs("div", {
+                className: "flex flex-wrap gap-2 mt-3 text-xs",
+                children: [
+                  s.category && a.jsx("span", { className: "badge bg-gray-100 text-gray-600", children: s.category.name }),
+                  a.jsx("span", { className: "badge bg-gray-100 text-gray-600 capitalize", children: s.condition }),
+                  a.jsxs("span", { className: "badge bg-gray-100 text-gray-600 flex items-center gap-0.5", children: [a.jsx(yt, { className: "w-3 h-3" }), " ", formatListingLocation(s)] }),
+                  a.jsxs("span", { className: "badge bg-gray-100 text-gray-600 flex items-center gap-0.5", children: [a.jsx(Pw, { className: "w-3 h-3" }), " ", Ar(s.created_at)] })
+                ]
+              })
+            ]
+          }),
+          s.description && a.jsxs("div", {
+            className: "card p-4 mb-4",
+            children: [
+              a.jsx("h2", { className: "text-sm font-semibold text-gray-800 mb-2", children: "Description" }),
+              a.jsx("p", { className: "text-sm text-gray-600 whitespace-pre-wrap leading-relaxed", children: s.description })
+            ]
+          }),
+          s.seller && a.jsxs("div", {
+            className: "card p-4 mb-4",
+            children: [
+              a.jsx("h2", { className: "text-sm font-semibold text-gray-800 mb-3", children: "Seller Information" }),
+              a.jsxs("div", {
+                className: "flex items-center gap-3",
+                children: [
+                  a.jsx("div", {
+                    className: "w-12 h-12 rounded-full bg-gray-100 overflow-hidden shrink-0",
+                    children: s.seller.avatar_url ? a.jsx("img", { src: s.seller.avatar_url, alt: "", className: "w-full h-full object-cover" }) : a.jsx("div", { className: "w-full h-full flex items-center justify-center text-gray-400 font-medium", children: (k = s.seller.name) == null ? void 0 : k.charAt(0).toUpperCase() })
+                  }),
+                  a.jsxs("div", {
+                    className: "flex-1 min-w-0",
+                    children: [
+                      a.jsxs("div", {
+                        className: "flex items-center gap-1.5",
+                        children: [
+                          a.jsx("p", { className: "font-medium text-sm text-gray-900 truncate", children: s.seller.name }),
+                          y && a.jsxs("span", { className: "badge bg-primary-50 text-primary-600 shrink-0", children: [a.jsx(Op, { className: "w-3 h-3" }), " PRO"] })
+                        ]
+                      }),
+                      a.jsxs("p", { className: "text-xs text-gray-500 mt-0.5", children: ["Member since ", fr(s.seller.created_at)] }),
+                      s.seller.city && a.jsxs("p", { className: "text-xs text-gray-500 flex items-center gap-0.5 mt-0.5", children: [a.jsx(yt, { className: "w-3 h-3" }), " ", s.seller.city] })
+                    ]
+                  })
+                ]
+              })
+            ]
+          }),
+          a.jsxs("div", {
+            className: "card p-4 mb-4 bg-amber-50 border-amber-100",
+            children: [
+              a.jsxs("div", {
+                className: "flex items-center gap-2 mb-2",
+                children: [a.jsx(Gw, { className: "w-4 h-4 text-amber-600" }), a.jsx("h2", { className: "text-sm font-semibold text-amber-800", children: "Safety Tips" })]
+              }),
+              a.jsxs("ul", {
+                className: "text-xs text-amber-700 space-y-1 list-disc list-inside",
+                children: [
+                  a.jsx("li", { children: "Never send money before verifying the item in person." }),
+                  a.jsx("li", { children: "Meet in a safe, public location." }),
+                  a.jsx("li", { children: "Verify seller identity and product condition before buying." })
+                ]
+              })
+            ]
+          })
+        ]
+      }),
+      a.jsxs("div", {
+        className: "fixed bottom-0 left-0 right-0 md:relative md:bottom-auto bg-white border-t border-gray-100 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0.75rem))] flex items-center gap-2 z-40 shadow-lg",
+        children: isOwner ? [
+          a.jsxs(St, { to: "/my-ads", className: "btn-outline flex-1 text-center py-2.5 flex items-center justify-center gap-1.5", children: [a.jsx(Re, { className: "w-4 h-4 mr-1.5" }), "Manage My Ads"] }, "manage"),
+          a.jsxs("button", {
+            onClick: async () => {
+              if (confirm("Are you sure you want to delete this listing?")) {
+                await u1(s.id);
+                r.show("Listing removed successfully", "success");
+                t("/my-ads");
+              }
+            },
+            className: "btn-danger flex-1 py-2.5 flex items-center justify-center gap-1.5",
+            children: [a.jsx(Un, { className: "w-4 h-4 mr-1.5" }), "Delete Listing"]
+          }, "del")
+        ] : [
+          a.jsxs("button", {
+            onClick: g,
+            type: "button",
+            className: "btn-outline flex-1 text-green-600 border-green-200 hover:bg-green-50 font-semibold active:scale-95 transition-transform flex items-center justify-center gap-1.5 py-2.5",
+            children: [a.jsx(wo, { className: "w-4 h-4" }), " WhatsApp"]
+          }, "wa"),
+          a.jsxs("a", {
+            href: a1(phoneTarget),
+            onClick: (e) => {
+              if (!phoneTarget) {
+                e.preventDefault();
+                r.show("Seller phone number not available", "error");
+              }
+            },
+            className: "btn-outline flex-1 text-secondary-600 border-secondary-200 hover:bg-secondary-50 font-semibold active:scale-95 transition-transform flex items-center justify-center gap-1.5 py-2.5",
+            children: [a.jsx(Dp, { className: "w-4 h-4" }), " Call"]
+          }, "call"),
+          a.jsxs("button", {
+            onClick: f,
+            type: "button",
+            className: "btn-primary flex-1 font-semibold active:scale-95 transition-transform flex items-center justify-center gap-1.5 py-2.5",
+            children: [a.jsx(wo, { className: "w-4 h-4" }), " Chat"]
+          }, "chat"),
+          isAdmin && a.jsx("button", {
+            onClick: async () => {
+              if (confirm("Admin: Permanently delete this listing?")) {
+                await u1(s.id);
+                r.show("Listing deleted by admin", "success");
+                t("/");
+              }
+            },
+            className: "btn-outline text-error-600 border-error-200 hover:bg-error-50 p-2.5 shrink-0 rounded-lg",
+            title: "Admin Delete",
+            children: a.jsx(Un, { className: "w-4 h-4" })
+          }, "admin-del")
+        ]
+      }),
+      p && a.jsxs("div", {
+        className: "fixed inset-0 z-[60] bg-black/90 flex items-center justify-center",
+        onClick: () => v(!1),
+        children: [
+          a.jsx("button", { className: "absolute top-4 right-4 text-white p-2", onClick: () => v(!1), children: a.jsx(Un, { className: "w-6 h-6" }) }),
+          a.jsx("img", { src: s.images[d], alt: "", className: "max-w-full max-h-full object-contain" })
+        ]
+      })
+    ]
+  });
+}
+function K1(){const{signIn:e,signUp:t,resetPassword:n,refreshProfile:rf,user:currU}=Ae(),r=he(),s=ke();m.useEffect(()=>{if(currU)s("/")},[currU,s]);const[i,l]=m.useState("signin"),[o,c]=m.useState(""),[u,d]=m.useState(""),[h,p]=m.useState(""),[v,x]=m.useState(!1),[showGoogleModal,setShowGoogleModal]=m.useState(!1),[customEmail,setCustomEmail]=m.useState(""),[customName,setCustomName]=m.useState("");const performGoogleSignIn=async(targetEmail,targetName)=>{
   x(!0);
   try{
     const cleanEmail = (targetEmail || "").toLowerCase().trim();

@@ -93,6 +93,8 @@ fun HomeScreen(
     val selectedCategory by viewModel.selectedCategory.collectAsStateWithLifecycle()
     val selectedLocation by viewModel.selectedLocation.collectAsStateWithLifecycle()
     val listings by viewModel.filteredListings.collectAsStateWithLifecycle()
+    val topProListings = remember(listings) { listings.filter { it.isFeatured } }
+    val regularListings = remember(listings) { listings.filter { !it.isFeatured } }
     val favoriteIds by viewModel.favoriteIds.collectAsStateWithLifecycle()
     val selectedCondition by viewModel.selectedCondition.collectAsStateWithLifecycle()
     val minPrice by viewModel.minPrice.collectAsStateWithLifecycle()
@@ -318,8 +320,47 @@ fun HomeScreen(
             }
         }
 
-        // Listings 2-Column Grid Items
-        items(listings, key = { it.id }) { listing ->
+        // Top PRO Listings Items (Distinct Header and Feed)
+        if (topProListings.isNotEmpty()) {
+            items(topProListings, key = { "pro_${it.id}" }) { listing ->
+                Box(modifier = Modifier.padding(horizontal = 6.dp)) {
+                    ListingCard(
+                        listing = listing,
+                        isFavorite = favoriteIds.contains(listing.id),
+                        onListingClick = { viewModel.selectListing(listing) },
+                        onFavoriteClick = { viewModel.toggleFavorite(listing.id) }
+                    )
+                }
+            }
+
+            // Recent Listings Divider/Header
+            if (regularListings.isNotEmpty()) {
+                item(span = { GridItemSpan(2) }) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Recent Listings",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Text(
+                            text = "${regularListings.size} regular ads",
+                            fontSize = 12.sp,
+                            color = Slate500
+                        )
+                    }
+                }
+            }
+        }
+
+        // Recent / Regular Listings (No Top PRO duplicates)
+        items(regularListings, key = { "reg_${it.id}" }) { listing ->
             Box(modifier = Modifier.padding(horizontal = 6.dp)) {
                 ListingCard(
                     listing = listing,
