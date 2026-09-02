@@ -1,22 +1,11 @@
 package com.example.ui.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.data.local.BazaarDatabase
-import com.example.data.local.CategoryEntity
-import com.example.data.local.ChatMessageEntity
-import com.example.data.local.ListingEntity
-import com.example.data.local.LocationEntity
-import com.example.data.local.RechargeRequestEntity
-import com.example.data.repository.BannerItem
+import com.example.data.local.*
 import com.example.data.repository.BazaarRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
+import com.example.data.security.DeviceLockResult
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -24,14 +13,15 @@ enum class AppScreen {
     HOME,
     SEARCH,
     POST_AD,
-    CHATS,
+    CHAT_LIST,
     CHAT_DETAIL,
-    MY_ADS,
-    FAVORITES,
     ACCOUNT,
-    PRO_MEMBERSHIP,
+    MY_ADS,
+    SAVED_ADS,
+    RECHARGE,
     ADMIN_PANEL,
-    LISTING_DETAIL
+    LISTING_DETAIL,
+    SAFETY_TIPS
 }
 
 enum class SortOption {
@@ -40,22 +30,41 @@ enum class SortOption {
     PRICE_HIGH_TO_LOW
 }
 
-class BazaarViewModel(application: Application) : AndroidViewModel(application) {
-    private val database = BazaarDatabase.getDatabase(application)
-    private val repository = BazaarRepository(database)
+class BazaarViewModel(
+    val repository: BazaarRepository
+) : ViewModel() {
 
-    // Current Navigation Screen
+    // User session state
+    val userId = MutableStateFlow("user_default")
+    val userName = MutableStateFlow("Silgrak Marak")
+    val userEmail = MutableStateFlow("silgrakmarak1309@gmail.com")
+    val userPhone = MutableStateFlow("9876543210")
+    val userCity = MutableStateFlow("Tura, Meghalaya")
+    val isProUser = MutableStateFlow(true)
+    val isAdminUser = MutableStateFlow(true)
+    val isHardwareLocked = MutableStateFlow(false)
+    val boundHardwareEmail = MutableStateFlow<String?>(null)
+
+    // Navigation & Screen state
     private val _currentScreen = MutableStateFlow(AppScreen.HOME)
     val currentScreen: StateFlow<AppScreen> = _currentScreen.asStateFlow()
 
-    // Selected items for detail views
     private val _selectedListing = MutableStateFlow<ListingEntity?>(null)
     val selectedListing: StateFlow<ListingEntity?> = _selectedListing.asStateFlow()
 
     private val _activeChatId = MutableStateFlow<String?>(null)
     val activeChatId: StateFlow<String?> = _activeChatId.asStateFlow()
 
-    // Search and Filter States
+    // Sync status
+    val isSyncing = MutableStateFlow(false)
+    val isFirebaseConnected = MutableStateFlow(true)
+    val lastSyncTime = MutableStateFlow(System.currentTimeMillis())
+
+    // Snackbar notifications
+    private val _snackbarMessage = MutableStateFlow<String?>(null)
+    val snackbarMessage: StateFlow<String?> = _snackbarMessage.asStateFlow()
+
+    // Filters
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
@@ -65,7 +74,7 @@ class BazaarViewModel(application: Application) : AndroidViewModel(application) 
     private val _selectedLocation = MutableStateFlow<LocationEntity?>(null)
     val selectedLocation: StateFlow<LocationEntity?> = _selectedLocation.asStateFlow()
 
-    private val _selectedCondition = MutableStateFlow<String>("All")
+    private val _selectedCondition = MutableStateFlow("All")
     val selectedCondition: StateFlow<String> = _selectedCondition.asStateFlow()
 
     private val _minPrice = MutableStateFlow<Double?>(null)
@@ -77,40 +86,47 @@ class BazaarViewModel(application: Application) : AndroidViewModel(application) 
     private val _sortOption = MutableStateFlow(SortOption.NEWEST)
     val sortOption: StateFlow<SortOption> = _sortOption.asStateFlow()
 
-    // User Profile
-    val userName = MutableStateFlow("Rahul Kumar")
-    val userPhone = MutableStateFlow("9876543210")
-    val userEmail = MutableStateFlow("rahul.kumar@example.com")
-    val isProUser = MutableStateFlow(true)
-    val userCity = MutableStateFlow("Delhi NCR")
-
-    // Notification message
-    private val _snackbarMessage = MutableStateFlow<String?>(null)
-    val snackbarMessage: StateFlow<String?> = _snackbarMessage.asStateFlow()
-
-    // Firebase Sync Status
-    val isSyncing = MutableStateFlow(false)
-    val isFirebaseConnected = MutableStateFlow(true)
-    val lastSyncTime = MutableStateFlow<Long>(System.currentTimeMillis())
-
-    // Data sources
-    val banners: List<BannerItem> = repository.getBanners()
-    val categories: StateFlow<List<CategoryEntity>> = repository.allCategories
+    // Flows from repository
+    val categories: StateFlow<List<CategoryEntity>> = repository.categories
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    val locations: StateFlow<List<LocationEntity>> = repository.allLocations
+
+    val allAdminCategories: StateFlow<List<CategoryEntity>> = repository.allAdminCategories
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val locations: StateFlow<List<LocationEntity>> = repository.locations
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val allAdminLocations: StateFlow<List<LocationEntity>> = repository.allAdminLocations
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     val favoriteIds: StateFlow<List<String>> = repository.favoriteIds
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     val favoriteListings: StateFlow<List<ListingEntity>> = repository.favoriteListings
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    val myListings: StateFlow<List<ListingEntity>> = repository.getMyListings()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    val allMessages: StateFlow<List<ChatMessageEntity>> = repository.allMessages
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    val rechargeRequests: StateFlow<List<RechargeRequestEntity>> = repository.rechargeRequests
+
+    val allAdminListings: StateFlow<List<ListingEntity>> = repository.allAdminListings
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // Filtered Listings
+    val topProRequests: StateFlow<List<RechargeRequestEntity>> = repository.topProRequests
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val monthlyPlanRequests: StateFlow<List<RechargeRequestEntity>> = repository.monthlyPlanRequests
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val approvedTransactions: StateFlow<List<RechargeRequestEntity>> = repository.approvedTransactions
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val allUsers: StateFlow<List<UserEntity>> = repository.allUsers
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val allSettings: StateFlow<List<AdminSettingEntity>> = repository.allSettings
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val myListings: StateFlow<List<ListingEntity>> = userId.flatMapLatest { uid ->
+        repository.getMyListings(uid)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     val filteredListings: StateFlow<List<ListingEntity>> = combine(
         repository.allListings,
         _searchQuery,
@@ -121,26 +137,29 @@ class BazaarViewModel(application: Application) : AndroidViewModel(application) 
         _maxPrice,
         _sortOption
     ) { args: Array<Any?> ->
-        @Suppress("UNCHECKED_CAST")
-        val rawListings = args[0] as List<ListingEntity>
-        val query = (args[1] as String).trim().lowercase()
-        val category = args[2] as? CategoryEntity
-        val location = args[3] as? LocationEntity
-        val condition = args[4] as String
-        val minP = args[5] as? Double
-        val maxP = args[6] as? Double
+        val listings = args[0] as List<ListingEntity>
+        val query = args[1] as String
+        val cat = args[2] as CategoryEntity?
+        val loc = args[3] as LocationEntity?
+        val cond = args[4] as String
+        val minP = args[5] as Double?
+        val maxP = args[6] as Double?
         val sort = args[7] as SortOption
 
-        rawListings.filter { listing ->
-            val matchesQuery = query.isEmpty() ||
-                    listing.title.lowercase().contains(query) ||
-                    listing.description.lowercase().contains(query) ||
-                    listing.categoryName.lowercase().contains(query) ||
-                    listing.locationName.lowercase().contains(query)
+        listings.filter { listing ->
+            val matchesQuery = query.isBlank() ||
+                    listing.title.contains(query, ignoreCase = true) ||
+                    listing.description.contains(query, ignoreCase = true) ||
+                    listing.categoryName.contains(query, ignoreCase = true) ||
+                    listing.locationName.contains(query, ignoreCase = true)
 
-            val matchesCategory = category == null || listing.categoryId == category.id
-            val matchesLocation = location == null || listing.locationId == location.id
-            val matchesCondition = condition == "All" || listing.condition.equals(condition, ignoreCase = true)
+            val matchesCategory = cat == null || listing.categoryId == cat.id
+            val matchesLocation = loc == null ||
+                    listing.locationId == loc.id ||
+                    listing.locationName.contains(loc.name, ignoreCase = true) ||
+                    listing.stateName.equals(loc.state, ignoreCase = true)
+
+            val matchesCondition = cond == "All" || listing.condition.equals(cond, ignoreCase = true)
             val matchesMinPrice = minP == null || listing.price >= minP
             val matchesMaxPrice = maxP == null || listing.price <= maxP
             val matchesStatus = listing.status == "active"
@@ -149,7 +168,6 @@ class BazaarViewModel(application: Application) : AndroidViewModel(application) 
         }.sortedWith { a, b ->
             when (sort) {
                 SortOption.NEWEST -> {
-                    // Featured first, then newest
                     if (a.isFeatured != b.isFeatured) {
                         if (a.isFeatured) -1 else 1
                     } else {
@@ -165,29 +183,61 @@ class BazaarViewModel(application: Application) : AndroidViewModel(application) 
     init {
         viewModelScope.launch {
             repository.seedInitialDataIfEmpty()
+            checkDeviceHardwareLock()
             syncFirebaseData(silent = true)
         }
     }
 
+    // -------------------------------------------------------------
+    // HARDWARE LOCKING & SESSION
+    // -------------------------------------------------------------
+    private fun checkDeviceHardwareLock() {
+        val bound = repository.getLocalBoundEmail()
+        boundHardwareEmail.value = bound
+        val current = userEmail.value.trim().lowercase()
+        isAdminUser.value = current == "silgrakmarak1309@gmail.com" ||
+                current == "grejamarak@gmail.com" ||
+                current == "megamarak8@gmail.com"
+    }
+
+    fun verifyDeviceLogin(email: String, onResult: (Boolean, String?) -> Unit) {
+        viewModelScope.launch {
+            val result = repository.verifyAndBindDevice(email)
+            when (result) {
+                is DeviceLockResult.Allowed -> {
+                    userEmail.value = email.trim().lowercase()
+                    userName.value = email.split("@").firstOrNull()?.replace(".", " ")?.capitalize() ?: "User"
+                    userId.value = "usr_${UUID.nameUUIDFromBytes(email.toByteArray()).toString().substring(0, 8)}"
+                    isAdminUser.value = result.isExistingAdmin
+                    isHardwareLocked.value = false
+                    boundHardwareEmail.value = email.trim().lowercase()
+                    onResult(true, null)
+                }
+                is DeviceLockResult.Denied -> {
+                    isHardwareLocked.value = true
+                    onResult(false, result.reason)
+                }
+            }
+        }
+    }
+
+    // -------------------------------------------------------------
+    // CLOUD SYNC
+    // -------------------------------------------------------------
     fun syncFirebaseData(silent: Boolean = false) {
         viewModelScope.launch {
             isSyncing.value = true
             try {
-                // Test connection
                 val isConnected = repository.firebaseService.testConnection()
                 isFirebaseConnected.value = isConnected
-
-                // Upload default data to Firebase if cloud is completely fresh
                 repository.uploadAllToFirebase()
-
-                // Sync data from Firebase
                 val success = repository.syncWithFirebase()
                 lastSyncTime.value = System.currentTimeMillis()
                 if (!silent) {
                     if (success) {
-                        showSnackbar("☁️ Synced with Firebase (localbazar-cff07)")
+                        showSnackbar("☁️ Synced with Firebase Cloud (localbazar-cff07)")
                     } else {
-                        showSnackbar("Offline mode: using local cached database")
+                        showSnackbar("Offline mode: using cached local database")
                     }
                 }
             } catch (e: Exception) {
@@ -201,6 +251,9 @@ class BazaarViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    // -------------------------------------------------------------
+    // NAVIGATION
+    // -------------------------------------------------------------
     fun navigateTo(screen: AppScreen) {
         _currentScreen.value = screen
     }
@@ -233,6 +286,9 @@ class BazaarViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    // -------------------------------------------------------------
+    // SEARCH & FILTERS
+    // -------------------------------------------------------------
     fun setSearchQuery(query: String) {
         _searchQuery.value = query
     }
@@ -269,6 +325,9 @@ class BazaarViewModel(application: Application) : AndroidViewModel(application) 
         _sortOption.value = SortOption.NEWEST
     }
 
+    // -------------------------------------------------------------
+    // POSTING & MODERATION
+    // -------------------------------------------------------------
     fun postNewAd(
         title: String,
         categoryId: String,
@@ -302,7 +361,7 @@ class BazaarViewModel(application: Application) : AndroidViewModel(application) 
                 status = "active",
                 isFeatured = isProUser.value,
                 isPro = isProUser.value,
-                sellerId = "user_default",
+                sellerId = userId.value,
                 sellerName = userName.value,
                 sellerVerified = true,
                 sellerPhone = phone.trim(),
@@ -316,20 +375,23 @@ class BazaarViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun updateAdStatus(id: String, status: String) {
+    fun moderateListing(id: String, status: String, isFeatured: Boolean = false, isPro: Boolean = false) {
         viewModelScope.launch {
-            repository.updateListingStatus(id, status)
-            showSnackbar("Ad status updated to $status")
+            repository.updateListingModeration(id, status, isFeatured, isPro)
+            showSnackbar("Listing status updated to '$status'")
         }
     }
 
     fun deleteAd(id: String) {
         viewModelScope.launch {
             repository.deleteListing(id)
-            showSnackbar("Ad deleted")
+            showSnackbar("Listing deleted")
         }
     }
 
+    // -------------------------------------------------------------
+    // CHAT
+    // -------------------------------------------------------------
     fun sendMessage(chatId: String, listing: ListingEntity?, text: String) {
         if (text.isBlank()) return
         viewModelScope.launch {
@@ -349,44 +411,127 @@ class BazaarViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun submitRecharge(planName: String, amount: Double, utr: String) {
+    // -------------------------------------------------------------
+    // RECHARGE & PRO PLAN APPROVAL
+    // -------------------------------------------------------------
+    fun submitTopProRequest(listingId: String, listingTitle: String, amount: Double = 20.0, utr: String) {
+        viewModelScope.launch {
+            repository.submitRecharge(
+                planName = "⭐ Top PRO Boost (3 Days)",
+                amount = amount,
+                utr = utr,
+                userName = userName.value,
+                userEmail = userEmail.value,
+                userPhone = userPhone.value,
+                isTopPro = true,
+                listingId = listingId,
+                listingTitle = listingTitle
+            )
+            showSnackbar("✅ Top PRO Boost submitted! Pending admin verification.")
+            _currentScreen.value = AppScreen.ACCOUNT
+        }
+    }
+
+    fun submitMonthlyPlanRequest(planName: String, amount: Double, utr: String) {
         viewModelScope.launch {
             repository.submitRecharge(
                 planName = planName,
                 amount = amount,
                 utr = utr,
                 userName = userName.value,
-                userEmail = userEmail.value
+                userEmail = userEmail.value,
+                userPhone = userPhone.value,
+                isTopPro = false
             )
             isProUser.value = true
-            showSnackbar("✅ Payment request submitted! PRO features activated.")
+            showSnackbar("✅ Payment request submitted! Pending admin verification.")
             _currentScreen.value = AppScreen.ACCOUNT
         }
     }
 
-    fun activateFreeMonthPro() {
-        isProUser.value = true
-        showSnackbar("🎉 1 Month FREE PRO Plan Activated! Enjoy priority listings.")
-    }
-
     fun approveRecharge(id: String) {
         viewModelScope.launch {
-            repository.updateRechargeStatus(id, "Approved")
-            showSnackbar("Recharge request approved")
+            repository.approveRecharge(id)
+            showSnackbar("✓ Recharge approved! Expiry date generated and PRO activated.")
         }
     }
 
-    fun rejectRecharge(id: String) {
+    fun rejectRecharge(id: String, reason: String = "Payment verification failed") {
         viewModelScope.launch {
-            repository.updateRechargeStatus(id, "Rejected")
-            showSnackbar("Recharge request rejected")
+            repository.rejectRecharge(id, reason)
+            showSnackbar("✕ Recharge request rejected.")
         }
     }
 
+    // -------------------------------------------------------------
+    // USER MANAGEMENT
+    // -------------------------------------------------------------
+    fun updateUserStatus(id: String, status: String) {
+        viewModelScope.launch {
+            repository.updateUserStatus(id, status)
+            showSnackbar("User status updated to '$status'")
+        }
+    }
+
+    fun updateUserRole(id: String, role: String) {
+        viewModelScope.launch {
+            repository.updateUserRole(id, role)
+            showSnackbar("User role updated to '$role'")
+        }
+    }
+
+    fun grantUserPro(id: String, days: Int = 30) {
+        viewModelScope.launch {
+            repository.grantUserPro(id, days)
+            showSnackbar("PRO granted for $days days")
+        }
+    }
+
+    fun revokeUserPro(id: String) {
+        viewModelScope.launch {
+            repository.revokeUserPro(id)
+            showSnackbar("PRO revoked")
+        }
+    }
+
+    // -------------------------------------------------------------
+    // CATEGORIES & LOCATIONS CRUD
+    // -------------------------------------------------------------
     fun addCategory(name: String, icon: String = "Tag") {
         viewModelScope.launch {
             repository.addCategory(name, icon)
             showSnackbar("Category '$name' added successfully")
+        }
+    }
+
+    fun deleteCategory(id: String) {
+        viewModelScope.launch {
+            repository.deleteCategory(id)
+            showSnackbar("Category deleted")
+        }
+    }
+
+    fun addLocation(name: String, state: String = "India") {
+        viewModelScope.launch {
+            repository.addLocation(name, state)
+            showSnackbar("Location '$name' added successfully")
+        }
+    }
+
+    fun deleteLocation(id: String) {
+        viewModelScope.launch {
+            repository.deleteLocation(id)
+            showSnackbar("Location deleted")
+        }
+    }
+
+    // -------------------------------------------------------------
+    // SETTINGS MANAGEMENT
+    // -------------------------------------------------------------
+    fun saveSetting(key: String, value: String) {
+        viewModelScope.launch {
+            repository.saveSetting(key, value)
+            showSnackbar("Setting '$key' saved successfully!")
         }
     }
 

@@ -6967,8 +6967,10 @@ return a.jsxs("div", {
                   a.jsx("th", { className: "px-4 py-3", children: "User" }),
                   a.jsx("th", { className: "px-4 py-3", children: "Amount" }),
                   a.jsx("th", { className: "px-4 py-3", children: "Type" }),
-                  a.jsx("th", { className: "px-4 py-3", children: "Description" }),
-                  a.jsx("th", { className: "px-4 py-3", children: "Date & Time" })
+                  a.jsx("th", { className: "px-4 py-3", children: "Plan Details" }),
+                  a.jsx("th", { className: "px-4 py-3", children: "Recharge Date" }),
+                  a.jsx("th", { className: "px-4 py-3", children: "Expiry Date" }),
+                  a.jsx("th", { className: "px-4 py-3", children: "Status" })
                 ]
               })
             }),
@@ -6980,8 +6982,22 @@ return a.jsxs("div", {
                 const userEmail = userProfile?.email || o.user_email || o.email || "";
                 const isProBoost = o.type === "top_pro_boost" || o.type === "top_pro" || o.plan_id === "plan_single_top_pro" || o.amount === 30 || o.amount === 10 || o.amount === 20 || !!o.listing_title || !!o.listing_id;
                 const isMonthly = o.amount === 50 || (o.plan_id && String(o.plan_id).includes("month")) || (o.plan && o.plan.name && o.plan.name.includes("Month"));
-                const desc = o.description || (isProBoost ? ("Top PRO Boost: " + (o.listing_title || "Featured Listing")) : (isMonthly ? "Monthly PRO Membership Plan" : (o.plan?.name ? o.plan.name + " Plan" : "PRO Subscription")));
-                const dateStr = pr(o.created_at || o.submitted_at || o.date || o.created_time) || "27 Aug 2026";
+                const desc = o.description || (isProBoost ? ("Top PRO Boost: " + (o.listing_title || "Featured Listing")) : (isMonthly ? "Monthly PRO Plan" : (o.plan?.name ? o.plan.name + " Plan" : "PRO Subscription")));
+                
+                const rechargeDateRaw = o.recharge_date || o.approved_at || o.created_at || o.submitted_at || o.date;
+                const rechargeDateStr = rechargeDateRaw ? pr(rechargeDateRaw) : "27 Aug 2026";
+                
+                let expiryDateStr = "Active";
+                let isExpired = false;
+                if (o.expiry_date || o.approved_expiry_date) {
+                  expiryDateStr = pr(o.expiry_date || o.approved_expiry_date);
+                  isExpired = new Date(o.expiry_date || o.approved_expiry_date).getTime() < Date.now();
+                } else if (rechargeDateRaw) {
+                  const days = isProBoost ? 3 : (o.amount >= 350 ? 365 : (o.amount >= 200 ? 180 : (o.amount >= 120 ? 90 : 30)));
+                  const expTime = new Date(rechargeDateRaw).getTime() + days * 86400000;
+                  expiryDateStr = pr(new Date(expTime).toISOString());
+                  isExpired = expTime < Date.now();
+                }
 
                 return a.jsxs("tr", {
                   className: "hover:bg-gray-50/80 transition-colors",
@@ -7004,10 +7020,21 @@ return a.jsxs("div", {
                         children: isProBoost ? "⭐ TOP PRO" : (isMonthly ? "🌟 MONTHLY PRO" : (o.type ? o.type.replace(/_/g, " ").toUpperCase() : "PRO PLAN"))
                       })
                     }),
-                    a.jsx("td", { className: "px-4 py-3 text-gray-600 max-w-sm font-medium", children: desc }),
+                    a.jsx("td", { className: "px-4 py-3 text-gray-600 max-w-xs text-xs font-medium", children: desc }),
                     a.jsx("td", {
-                      className: "px-4 py-3 text-xs font-semibold text-gray-700 whitespace-nowrap",
-                      children: dateStr
+                      className: "px-4 py-3 text-xs font-medium text-gray-700 whitespace-nowrap",
+                      children: rechargeDateStr
+                    }),
+                    a.jsx("td", {
+                      className: "px-4 py-3 text-xs font-bold whitespace-nowrap " + (isExpired ? "text-red-600" : "text-emerald-700"),
+                      children: expiryDateStr
+                    }),
+                    a.jsx("td", {
+                      className: "px-4 py-3 whitespace-nowrap",
+                      children: a.jsx("span", {
+                        className: "badge " + (isExpired ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-800"),
+                        children: isExpired ? "Expired" : "Active"
+                      })
                     })
                   ]
                 }, o.id);

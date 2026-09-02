@@ -1,956 +1,1315 @@
 package com.example.ui.screens
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
-import coil.compose.AsyncImage
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.HelpOutline
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AdminPanelSettings
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.CloudDone
-import androidx.compose.material.icons.filled.CloudSync
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.ListAlt
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Payment
-import androidx.compose.material.icons.filled.QrCode
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Verified
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.data.local.RechargeRequestEntity
-import com.example.ui.components.LocationSelectorDialog
-import com.example.ui.components.SafetyTipsCard
-import com.example.ui.components.formatRupee
-import com.example.ui.theme.BazaarGold
-import com.example.ui.theme.BazaarGoldLight
-import com.example.ui.theme.BazaarGreen
-import com.example.ui.theme.BazaarGreenLight
-import com.example.ui.theme.BazaarOrange
-import com.example.ui.theme.BazaarOrangeDark
-import com.example.ui.theme.BazaarOrangeLight
-import com.example.ui.theme.BazaarTeal
-import com.example.ui.theme.BazaarTealLight
-import com.example.ui.theme.Red500
-import com.example.ui.theme.Slate200
-import com.example.ui.theme.Slate400
-import com.example.ui.theme.Slate500
-import com.example.ui.theme.Slate600
-import com.example.ui.theme.Slate700
-import com.example.ui.theme.Slate900
-import com.example.ui.theme.White
+import coil.compose.AsyncImage
+import com.example.data.local.*
+import com.example.ui.theme.PrimaryGreen
+import com.example.ui.theme.PrimaryGreenLight
 import com.example.ui.viewmodel.AppScreen
 import com.example.ui.viewmodel.BazaarViewModel
+import java.text.SimpleDateFormat
+import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AccountScreen(
-    viewModel: BazaarViewModel,
-    modifier: Modifier = Modifier
-) {
-    val userName by viewModel.userName.collectAsStateWithLifecycle()
-    val userPhone by viewModel.userPhone.collectAsStateWithLifecycle()
-    val userCity by viewModel.userCity.collectAsStateWithLifecycle()
-    val isProUser by viewModel.isProUser.collectAsStateWithLifecycle()
-    val locations by viewModel.locations.collectAsStateWithLifecycle()
-    val selectedLocation by viewModel.selectedLocation.collectAsStateWithLifecycle()
+fun AccountScreen(viewModel: BazaarViewModel) {
+    val userName by viewModel.userName.collectAsState()
+    val userEmail by viewModel.userEmail.collectAsState()
+    val userPhone by viewModel.userPhone.collectAsState()
+    val userCity by viewModel.userCity.collectAsState()
+    val isPro by viewModel.isProUser.collectAsState()
+    val isAdmin by viewModel.isAdminUser.collectAsState()
+    val isSyncing by viewModel.isSyncing.collectAsState()
+    val isConnected by viewModel.isFirebaseConnected.collectAsState()
+    val hardwareLockEmail by viewModel.boundHardwareEmail.collectAsState()
 
-    var showLocationDialog by remember { mutableStateOf(false) }
+    var showHardwareLockDialog by remember { mutableStateOf(false) }
 
-    if (showLocationDialog) {
-        LocationSelectorDialog(
-            locations = locations,
-            selectedLocation = selectedLocation,
-            onSelectLocation = { viewModel.selectLocation(it) },
-            onDismiss = { showLocationDialog = false }
-        )
-    }
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
-            .padding(bottom = 90.dp)
-    ) {
-        // Top App Bar
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surface,
-            shadowElevation = 2.dp
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "My Profile & Settings",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Text(
-                    text = "Meri Local Bazaar Account",
-                    fontSize = 12.sp,
-                    color = Slate500
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Profile Card
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clip(CircleShape)
-                        .background(BazaarOrange),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = userName.take(1).uppercase(),
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Black,
-                        color = White
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(14.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = userName,
-                            fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            imageVector = Icons.Default.Verified,
-                            contentDescription = "Verified",
-                            tint = BazaarTeal,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    Text(
-                        text = "+91 $userPhone",
-                        fontSize = 13.sp,
-                        color = Slate500
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    if (isProUser) {
-                        Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = BazaarGold
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(Icons.Default.Star, contentDescription = null, tint = White, modifier = Modifier.size(11.dp))
-                                Spacer(modifier = Modifier.width(3.dp))
-                                Text("PRO MEMBER", fontSize = 9.sp, fontWeight = FontWeight.Black, color = White)
-                            }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("My Profile & Account", fontWeight = FontWeight.Bold) },
+                actions = {
+                    IconButton(onClick = { viewModel.syncFirebaseData() }, enabled = !isSyncing) {
+                        if (isSyncing) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = PrimaryGreen)
+                        } else {
+                            Icon(
+                                Icons.Default.Refresh,
+                                contentDescription = "Sync Cloud",
+                                tint = if (isConnected) PrimaryGreen else Color.Gray
+                            )
                         }
                     }
                 }
-            }
+            )
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // PRO Upgrade Banner Card
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = BazaarGoldLight),
+    ) { padding ->
+        LazyColumn(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .clickable { viewModel.navigateTo(AppScreen.PRO_MEMBERSHIP) }
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(BazaarGold),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(Icons.Default.Star, contentDescription = null, tint = White, modifier = Modifier.size(22.dp))
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            text = "Upgrade to PRO Seller",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Slate900
-                        )
-                        Text(
-                            text = "Get verified badge & top ad placement for ₹50",
-                            fontSize = 11.sp,
-                            color = Slate700
-                        )
-                    }
-                }
-                Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = BazaarGold)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Options List Card
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        ) {
-            Column {
-                AccountOptionRow(
-                    icon = Icons.Default.ListAlt,
-                    title = "My Posted Ads",
-                    subtitle = "Manage, view & mark sold",
-                    onClick = { viewModel.navigateTo(AppScreen.MY_ADS) }
-                )
-                HorizontalDivider(color = Slate200, modifier = Modifier.padding(horizontal = 16.dp))
-
-                AccountOptionRow(
-                    icon = Icons.Default.Favorite,
-                    title = "Saved Ads",
-                    subtitle = "Bookmarked items & wishlist",
-                    onClick = { viewModel.navigateTo(AppScreen.FAVORITES) }
-                )
-                HorizontalDivider(color = Slate200, modifier = Modifier.padding(horizontal = 16.dp))
-
-                AccountOptionRow(
-                    icon = Icons.Default.LocationOn,
-                    title = "Selected Location",
-                    subtitle = userCity,
-                    onClick = { showLocationDialog = true }
-                )
-                HorizontalDivider(color = Slate200, modifier = Modifier.padding(horizontal = 16.dp))
-
-                AccountOptionRow(
-                    icon = Icons.Default.AdminPanelSettings,
-                    title = "Admin & Moderation Panel",
-                    subtitle = "Review recharge requests & categories",
-                    onClick = { viewModel.navigateTo(AppScreen.ADMIN_PANEL) }
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Safety Tips Section
-        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-            SafetyTipsCard()
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // App Info & Version
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("Meri Local Bazaar v2.0", fontSize = 12.sp, color = Slate400, fontWeight = FontWeight.SemiBold)
-            Text("Empowering Local Indian Trade & Neighborhood Markets", fontSize = 11.sp, color = Slate400)
-        }
-    }
-}
-
-@Composable
-private fun AccountOptionRow(
-    icon: ImageVector,
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(BazaarOrangeLight),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(imageVector = icon, contentDescription = null, tint = BazaarOrangeDark, modifier = Modifier.size(18.dp))
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text(text = title, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Slate900)
-                Text(text = subtitle, fontSize = 11.sp, color = Slate500)
-            }
-        }
-        Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = null, tint = Slate400)
-    }
-}
-
-@Composable
-fun ProMembershipScreen(
-    viewModel: BazaarViewModel,
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    var utrNumber by remember { mutableStateOf("") }
-    val upiId = "merilocalbazaar@upi"
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
-            .padding(bottom = 60.dp)
-    ) {
-        // Top App Bar
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surface,
-            shadowElevation = 2.dp
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = { viewModel.navigateTo(AppScreen.ACCOUNT) }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Slate700)
-                }
-                Spacer(modifier = Modifier.width(4.dp))
-                Column {
-                    Text(
-                        text = "PRO Membership Plan",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Text(
-                        text = "Supercharge your sales with top visibility",
-                        fontSize = 11.sp,
-                        color = Slate500
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // PRO Plan Pricing Card
-        Card(
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                Row(
+            // User Header Card
+            item {
+                Card(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = BazaarGold
-                        ) {
-                            Text("POPULAR PLAN", fontSize = 10.sp, fontWeight = FontWeight.Black, color = White, modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp))
-                        }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text("PRO Seller Monthly", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Slate900)
-                    }
-
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text("₹50", fontSize = 28.sp, fontWeight = FontWeight.Black, color = BazaarOrangeDark)
-                        Text("/ 30 Days", fontSize = 11.sp, color = Slate500)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-                HorizontalDivider(color = Slate200)
-                Spacer(modifier = Modifier.height(16.dp))
-
-                ProFeatureItem(text = "👑 Verified Golden PRO Seller Badge on Profile")
-                ProFeatureItem(text = "🚀 10x More Views & Top Pinned Ads")
-                ProFeatureItem(text = "📱 Direct WhatsApp Chat Button on all Listings")
-                ProFeatureItem(text = "⚡ Instant Buyer Lead Notifications")
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // UPI Payment Box with QR Code Scanner
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = BazaarTealLight),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(Icons.Default.QrCode, contentDescription = null, tint = BazaarTeal)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Scan QR Code to Pay", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = BazaarTeal)
-                }
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                Text(
-                    text = "Scan with Google Pay, PhonePe, Paytm, BHIM or any UPI app",
-                    fontSize = 11.sp,
-                    color = Slate600,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                // QR Code Frame
-                Surface(
                     shape = RoundedCornerShape(16.dp),
-                    color = White,
-                    border = androidx.compose.foundation.BorderStroke(2.dp, BazaarTeal.copy(alpha = 0.3f)),
-                    shadowElevation = 2.dp,
-                    modifier = Modifier.size(190.dp)
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.padding(8.dp)
-                    ) {
-                        val qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=" +
-                                Uri.encode("upi://pay?pa=${upiId.trim()}&pn=${Uri.encode("Meri Local Bazaar")}&am=50&cu=INR&tn=${Uri.encode("PRO Membership")}")
-                        AsyncImage(
-                            model = qrUrl,
-                            contentDescription = "UPI Payment QR Code",
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(RoundedCornerShape(8.dp))
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Accepted Apps & Amount Badges
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = BazaarTeal.copy(alpha = 0.12f)
-                    ) {
-                        Text(
-                            text = "Pay ₹50",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = BazaarTeal,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                        )
-                    }
-                    Text("•", color = Slate400, fontSize = 10.sp)
-                    Text("GPay", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF4285F4))
-                    Text("PhonePe", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF5F259F))
-                    Text("Paytm", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF00B9F5))
-                    Text("BHIM", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = Slate700)
-                }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = White,
-                    modifier = Modifier.fillMaxWidth()
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(64.dp)
+                                .clip(CircleShape)
+                                .background(PrimaryGreen),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = userName.take(1).uppercase(),
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = userName,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                if (isPro) {
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Surface(
+                                        color = Color(0xFFFFB300),
+                                        shape = RoundedCornerShape(4.dp)
+                                    ) {
+                                        Text(
+                                            "PRO",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.Black,
+                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+                            }
+                            Text(
+                                text = userEmail,
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "📍 $userCity • 📞 $userPhone",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Hardware Lock Status Banner
+            item {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showHardwareLockDialog = true },
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFFE8F5E9),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF81C784))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Lock, contentDescription = null, tint = Color(0xFF2E7D32))
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                "🔒 Device Hardware Lock: Active",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1B5E20)
+                            )
+                            Text(
+                                "Bound to: ${hardwareLockEmail ?: userEmail}",
+                                fontSize = 11.sp,
+                                color = Color(0xFF2E7D32)
+                            )
+                        }
+                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color(0xFF2E7D32))
+                    }
+                }
+            }
+
+            // Admin Panel Entry (Visible for admins)
+            if (isAdmin) {
+                item {
+                    Button(
+                        onClick = { viewModel.navigateTo(AppScreen.ADMIN_PANEL) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E293B))
+                    ) {
+                        Icon(Icons.Default.AdminPanelSettings, contentDescription = null, tint = Color.White)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("🛡️ Open Full Admin Dashboard", fontWeight = FontWeight.Bold, color = Color.White)
+                    }
+                }
+            }
+
+            // Main Actions Grid
+            item {
+                Text("Quick Actions", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            }
+
+            item {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    AccountActionCard(
+                        title = "My Ads",
+                        subtitle = "Manage postings",
+                        icon = Icons.Outlined.Inventory2,
+                        modifier = Modifier.weight(1f),
+                        onClick = { viewModel.navigateTo(AppScreen.MY_ADS) }
+                    )
+                    AccountActionCard(
+                        title = "Saved Ads",
+                        subtitle = "Favorites",
+                        icon = Icons.Outlined.FavoriteBorder,
+                        modifier = Modifier.weight(1f),
+                        onClick = { viewModel.navigateTo(AppScreen.SAVED_ADS) }
+                    )
+                }
+            }
+
+            item {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    AccountActionCard(
+                        title = "Recharge & PRO",
+                        subtitle = if (isPro) "Active PRO User" else "Upgrade to PRO",
+                        icon = Icons.Outlined.WorkspacePremium,
+                        accent = true,
+                        modifier = Modifier.weight(1f),
+                        onClick = { viewModel.navigateTo(AppScreen.RECHARGE) }
+                    )
+                    AccountActionCard(
+                        title = "Safety Tips",
+                        subtitle = "Safe trading rules",
+                        icon = Icons.Outlined.Shield,
+                        modifier = Modifier.weight(1f),
+                        onClick = { viewModel.navigateTo(AppScreen.SAFETY_TIPS) }
+                    )
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
+    }
+
+    if (showHardwareLockDialog) {
+        AlertDialog(
+            onDismissRequest = { showHardwareLockDialog = false },
+            title = { Text("🔒 Hardware Security Lock") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "This device is permanently hardware-bound via Android ID and Android KeyStore to:",
+                        fontSize = 13.sp
+                    )
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            hardwareLockEmail ?: userEmail,
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryGreen,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+                    Text(
+                        "Device ID: ${viewModel.repository.getHardwareDeviceId()}",
+                        fontSize = 11.sp,
+                        color = Color.Gray
+                    )
+                    Text(
+                        "Even if app storage is cleared or reinstalled, this device remains securely locked to this account.",
+                        fontSize = 12.sp
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showHardwareLockDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun AccountActionCard(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    modifier: Modifier = Modifier,
+    accent: Boolean = false,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier.clickable { onClick() },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (accent) PrimaryGreenLight.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = if (accent) PrimaryGreen else MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(28.dp)
+            )
+            Text(title, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+            Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+// -------------------------------------------------------------
+// COMPREHENSIVE ADMIN PANEL SCREEN
+// -------------------------------------------------------------
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AdminPanelScreen(viewModel: BazaarViewModel) {
+    var selectedTab by remember { mutableStateOf(0) }
+    val tabs = listOf(
+        "⭐ Top PRO",
+        "📅 Monthly Plans",
+        "👥 Users",
+        "📦 Listings",
+        "💳 Transactions",
+        "🏷️ Categories",
+        "📍 Locations",
+        "⚙️ Settings"
+    )
+
+    val isSyncing by viewModel.isSyncing.collectAsState()
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("🛡️ Admin Dashboard", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = { viewModel.navigateTo(AppScreen.ACCOUNT) }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { viewModel.syncFirebaseData() }, enabled = !isSyncing) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Sync Cloud")
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            // Scrollable Tab Row
+            ScrollableTabRow(
+                selectedTabIndex = selectedTab,
+                edgePadding = 12.dp,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                tabs.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTab == index,
+                        onClick = { selectedTab = index },
+                        text = { Text(title, fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal) }
+                    )
+                }
+            }
+
+            when (selectedTab) {
+                0 -> TopProRequestsTab(viewModel)
+                1 -> MonthlyPlanRequestsTab(viewModel)
+                2 -> UsersManagementTab(viewModel)
+                3 -> ListingsModerationTab(viewModel)
+                4 -> TransactionsLedgerTab(viewModel)
+                5 -> CategoriesManagementTab(viewModel)
+                6 -> LocationsManagementTab(viewModel)
+                7 -> AdminSettingsTab(viewModel)
+            }
+        }
+    }
+}
+
+// -------------------------------------------------------------
+// 1. TOP PRO REQUESTS TAB
+// -------------------------------------------------------------
+@Composable
+fun TopProRequestsTab(viewModel: BazaarViewModel) {
+    val requests by viewModel.topProRequests.collectAsState()
+    val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
+
+    val pendingRequests = requests.filter { it.status == "Pending" }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            Text(
+                "Incoming Top PRO Requests (${pendingRequests.size} Pending)",
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+            Text(
+                "Single-listing priority boosts (₹10 / ₹20 / ₹30). Approve to feature listing instantly.",
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
+        }
+
+        if (pendingRequests.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("✓ No pending Top PRO boost requests", color = Color.Gray)
+                }
+            }
+        } else {
+            items(pendingRequests) { req ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "⭐ ${req.planName}",
+                                fontWeight = FontWeight.Bold,
+                                color = PrimaryGreen,
+                                fontSize = 15.sp
+                            )
+                            Surface(
+                                color = Color(0xFFFF9800),
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    "₹${req.amount.toInt()}",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+
+                        if (req.listingTitle.isNotBlank()) {
+                            Text("Listing: ${req.listingTitle}", fontWeight = FontWeight.Medium, fontSize = 13.sp)
+                        }
+
+                        Text("User: ${req.userName} (${req.userEmail})", fontSize = 12.sp)
+
+                        // UTR row with copy button
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(6.dp))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text("UTR: ", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Text(
+                                req.utrNumber.ifEmpty { "Not Provided" },
+                                fontSize = 12.sp,
+                                modifier = Modifier.weight(1f)
+                            )
+                            if (req.utrNumber.isNotBlank()) {
+                                IconButton(
+                                    onClick = {
+                                        clipboardManager.setText(AnnotatedString(req.utrNumber))
+                                        Toast.makeText(context, "UTR copied: ${req.utrNumber}", Toast.LENGTH_SHORT).show()
+                                    },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(Icons.Default.ContentCopy, contentDescription = "Copy UTR", modifier = Modifier.size(16.dp))
+                                }
+                            }
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Button(
+                                onClick = { viewModel.approveRecharge(req.id) },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)
+                            ) {
+                                Text("✓ Approve Boost")
+                            }
+                            OutlinedButton(
+                                onClick = { viewModel.rejectRecharge(req.id) },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+                            ) {
+                                Text("✕ Reject")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------------------------
+// 2. MONTHLY PLAN REQUESTS TAB
+// -------------------------------------------------------------
+@Composable
+fun MonthlyPlanRequestsTab(viewModel: BazaarViewModel) {
+    val requests by viewModel.monthlyPlanRequests.collectAsState()
+    val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
+
+    val pendingRequests = requests.filter { it.status == "Pending" }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            Text(
+                "Monthly Plan Requests (${pendingRequests.size} Pending)",
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+            Text(
+                "Monthly / Quarterly / Yearly PRO subscription requests. Approve to activate PRO user.",
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
+        }
+
+        if (pendingRequests.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("✓ No pending Monthly PRO plan requests", color = Color.Gray)
+                }
+            }
+        } else {
+            items(pendingRequests) { req ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                req.planName,
+                                fontWeight = FontWeight.Bold,
+                                color = PrimaryGreen,
+                                fontSize = 15.sp
+                            )
+                            Surface(
+                                color = PrimaryGreen,
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    "₹${req.amount.toInt()}",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+
+                        Text("User: ${req.userName} (${req.userEmail})", fontSize = 12.sp)
+
+                        // UTR row with copy button
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(6.dp))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text("UTR: ", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Text(
+                                req.utrNumber.ifEmpty { "Not Provided" },
+                                fontSize = 12.sp,
+                                modifier = Modifier.weight(1f)
+                            )
+                            if (req.utrNumber.isNotBlank()) {
+                                IconButton(
+                                    onClick = {
+                                        clipboardManager.setText(AnnotatedString(req.utrNumber))
+                                        Toast.makeText(context, "UTR copied: ${req.utrNumber}", Toast.LENGTH_SHORT).show()
+                                    },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(Icons.Default.ContentCopy, contentDescription = "Copy UTR", modifier = Modifier.size(16.dp))
+                                }
+                            }
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Button(
+                                onClick = { viewModel.approveRecharge(req.id) },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)
+                            ) {
+                                Text("✓ Approve & Activate")
+                            }
+                            OutlinedButton(
+                                onClick = { viewModel.rejectRecharge(req.id) },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+                            ) {
+                                Text("✕ Reject")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------------------------
+// 3. USERS MANAGEMENT TAB
+// -------------------------------------------------------------
+@Composable
+fun UsersManagementTab(viewModel: BazaarViewModel) {
+    val users by viewModel.allUsers.collectAsState()
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            Text("Registered Users Management (${users.size} Users)", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        }
+
+        items(users) { user ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+            ) {
+                Column(
+                    modifier = Modifier.padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(user.name, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        Surface(
+                            color = if (user.role.contains("admin")) Color(0xFF1E293B) else PrimaryGreen,
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            Text(
+                                user.role.uppercase(),
+                                color = Color.White,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+
+                    Text("📧 ${user.email} • 📞 ${user.phone}", fontSize = 12.sp, color = Color.Gray)
+                    Text("Status: ${user.accountStatus.uppercase()} | PRO: ${if (user.isPro) "YES" else "NO"}", fontSize = 12.sp)
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = {
+                                val nextStatus = if (user.accountStatus == "active") "blocked" else "active"
+                                viewModel.updateUserStatus(user.id, nextStatus)
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(if (user.accountStatus == "active") "Block" else "Unblock", fontSize = 11.sp)
+                        }
+
+                        Button(
+                            onClick = {
+                                if (user.isPro) viewModel.revokeUserPro(user.id) else viewModel.grantUserPro(user.id, 30)
+                            },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = if (user.isPro) Color.Gray else PrimaryGreen)
+                        ) {
+                            Text(if (user.isPro) "Revoke PRO" else "Grant PRO", fontSize = 11.sp)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------------------------
+// 4. LISTINGS MODERATION TAB
+// -------------------------------------------------------------
+@Composable
+fun ListingsModerationTab(viewModel: BazaarViewModel) {
+    val listings by viewModel.allAdminListings.collectAsState()
+    var filterStatus by remember { mutableStateOf("all") }
+
+    val filtered = listings.filter {
+        filterStatus == "all" || it.status.equals(filterStatus, ignoreCase = true)
+    }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            Text("Listings Moderation (${listings.size} Total)", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                listOf("all", "active", "pending", "sold").forEach { st ->
+                    FilterChip(
+                        selected = filterStatus == st,
+                        onClick = { filterStatus = st },
+                        label = { Text(st.capitalize()) }
+                    )
+                }
+            }
+        }
+
+        items(filtered) { listing ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    AsyncImage(
+                        model = listing.imagesJson.split(",").firstOrNull() ?: "",
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(70.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(listing.title, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text("₹${listing.price.toInt()} • ${listing.locationName}", fontSize = 12.sp, color = PrimaryGreen)
+                        Text("Seller: ${listing.sellerName} (${listing.sellerPhone})", fontSize = 11.sp, color = Color.Gray)
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.padding(top = 4.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    val nextFeatured = !listing.isFeatured
+                                    viewModel.moderateListing(listing.id, listing.status, nextFeatured, nextFeatured)
+                                },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(if (listing.isFeatured) "Unfeature" else "Feature ⭐", fontSize = 10.sp)
+                            }
+                            Button(
+                                onClick = { viewModel.deleteAd(listing.id) },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Delete", fontSize = 10.sp)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------------------------
+// 5. TRANSACTIONS & PAYMENT RECORDS TAB (WITH RECHARGE & EXPIRY DATES)
+// -------------------------------------------------------------
+@Composable
+fun TransactionsLedgerTab(viewModel: BazaarViewModel) {
+    val transactions by viewModel.approvedTransactions.collectAsState()
+    val dateFormat = remember { SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()) }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            Text("Transactions & Payment Records (${transactions.size} Approved)", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text("Complete ledger with generated Recharge Date and Expiry Date.", fontSize = 12.sp, color = Color.Gray)
+        }
+
+        if (transactions.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No transaction records yet.", color = Color.Gray)
+                }
+            }
+        } else {
+            items(transactions) { tx ->
+                val rechargeDateStr = if (tx.rechargeDate > 0) dateFormat.format(Date(tx.rechargeDate)) else dateFormat.format(Date(tx.createdAt))
+                val expiryDateStr = if (tx.expiryDate > 0) dateFormat.format(Date(tx.expiryDate)) else "Lifetime / Active"
+                val isExpired = tx.expiryDate > 0 && tx.expiryDate < System.currentTimeMillis()
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(tx.planName, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text("₹${tx.amount.toInt()}", fontWeight = FontWeight.Bold, color = PrimaryGreen, fontSize = 14.sp)
+                        }
+
+                        Text("👤 User: ${tx.userName} (${tx.userEmail})", fontSize = 12.sp)
+                        Text("🔑 UTR: ${tx.utrNumber}", fontSize = 12.sp, color = Color.Gray)
+
+                        Divider(modifier = Modifier.padding(vertical = 4.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text("Recharge Date:", fontSize = 11.sp, color = Color.Gray)
+                                Text(rechargeDateStr, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                            }
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text("Expiry Date:", fontSize = 11.sp, color = Color.Gray)
+                                Text(
+                                    expiryDateStr,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isExpired) Color.Red else PrimaryGreen
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------------------------
+// 6. CATEGORIES MANAGEMENT TAB
+// -------------------------------------------------------------
+@Composable
+fun CategoriesManagementTab(viewModel: BazaarViewModel) {
+    val categories by viewModel.allAdminCategories.collectAsState()
+    var newCategoryName by remember { mutableStateOf("") }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            Text("Categories Management (${categories.size} Active)", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = newCategoryName,
+                    onValueChange = { newCategoryName = it },
+                    placeholder = { Text("New Category Name") },
+                    modifier = Modifier.weight(1f)
+                )
+                Button(
+                    onClick = {
+                        if (newCategoryName.isNotBlank()) {
+                            viewModel.addCategory(newCategoryName)
+                            newCategoryName = ""
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)
+                ) {
+                    Text("Add")
+                }
+            }
+        }
+
+        items(categories) { cat ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(cat.name, fontWeight = FontWeight.Medium)
+                    IconButton(onClick = { viewModel.deleteCategory(cat.id) }) {
+                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------------------------
+// 7. LOCATIONS MANAGEMENT TAB
+// -------------------------------------------------------------
+@Composable
+fun LocationsManagementTab(viewModel: BazaarViewModel) {
+    val locations by viewModel.allAdminLocations.collectAsState()
+    var newLocationName by remember { mutableStateOf("") }
+    var newLocationState by remember { mutableStateOf("") }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            Text("Locations Management (${locations.size} Active)", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = newLocationName,
+                    onValueChange = { newLocationName = it },
+                    placeholder = { Text("City / Town Name (e.g. Tura)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = newLocationState,
+                    onValueChange = { newLocationState = it },
+                    placeholder = { Text("State (e.g. Meghalaya)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Button(
+                    onClick = {
+                        if (newLocationName.isNotBlank()) {
+                            viewModel.addLocation(newLocationName, newLocationState.ifEmpty { "India" })
+                            newLocationName = ""
+                            newLocationState = ""
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Add Location")
+                }
+            }
+        }
+
+        items(locations.take(50)) { loc ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(loc.name, fontWeight = FontWeight.Medium)
+                        Text(loc.state, fontSize = 11.sp, color = Color.Gray)
+                    }
+                    IconButton(onClick = { viewModel.deleteLocation(loc.id) }) {
+                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------------------------
+// 8. SETTINGS TAB (PAYMENT QR, UPI, ADMOB, TUTORIAL)
+// -------------------------------------------------------------
+@Composable
+fun AdminSettingsTab(viewModel: BazaarViewModel) {
+    val settings by viewModel.allSettings.collectAsState()
+
+    var upiId by remember { mutableStateOf("grejamarak@oksbi") }
+    var qrUrl by remember { mutableStateOf("") }
+    var admobAppId by remember { mutableStateOf("ca-app-pub-3940256099942544~3347511713") }
+    var admobBannerUnitId by remember { mutableStateOf("ca-app-pub-3940256099942544/6300978111") }
+    var tutorialVideoUrl by remember { mutableStateOf("https://www.youtube.com/watch?v=dQw4w9WgXcQ") }
+
+    LaunchedEffect(settings) {
+        settings.find { it.key == "upi_id" }?.let { upiId = it.value }
+        settings.find { it.key == "payment_qr_code" }?.let { qrUrl = it.value }
+        settings.find { it.key == "admob_app_id" }?.let { admobAppId = it.value }
+        settings.find { it.key == "admob_banner_ad_unit_id" }?.let { admobBannerUnitId = it.value }
+        settings.find { it.key == "tutorial_video_url" }?.let { tutorialVideoUrl = it.value }
+    }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            Text("⚙️ Platform & Monetization Settings", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        }
+
+        // UPI & Payment QR
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text("Payment UPI & QR Code", fontWeight = FontWeight.Bold)
+
+                    OutlinedTextField(
+                        value = upiId,
+                        onValueChange = { upiId = it },
+                        label = { Text("Admin UPI ID") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = qrUrl,
+                        onValueChange = { qrUrl = it },
+                        label = { Text("Payment QR Image URL") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Button(
+                        onClick = {
+                            viewModel.saveSetting("upi_id", upiId)
+                            viewModel.saveSetting("payment_qr_code", qrUrl)
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)
+                    ) {
+                        Text("Save Payment Settings")
+                    }
+                }
+            }
+        }
+
+        // AdMob Configuration
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text("Google AdMob Ads Configuration", fontWeight = FontWeight.Bold)
+
+                    OutlinedTextField(
+                        value = admobAppId,
+                        onValueChange = { admobAppId = it },
+                        label = { Text("AdMob App ID") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = admobBannerUnitId,
+                        onValueChange = { admobBannerUnitId = it },
+                        label = { Text("Banner Ad Unit ID") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Button(
+                        onClick = {
+                            viewModel.saveSetting("admob_app_id", admobAppId)
+                            viewModel.saveSetting("admob_banner_ad_unit_id", admobBannerUnitId)
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)
+                    ) {
+                        Text("Save AdMob Settings")
+                    }
+                }
+            }
+        }
+
+        // Tutorial Video
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text("Help & Tutorial Video", fontWeight = FontWeight.Bold)
+
+                    OutlinedTextField(
+                        value = tutorialVideoUrl,
+                        onValueChange = { tutorialVideoUrl = it },
+                        label = { Text("YouTube / Video URL") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Button(
+                        onClick = {
+                            viewModel.saveSetting("tutorial_video_url", tutorialVideoUrl)
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)
+                    ) {
+                        Text("Save Video Settings")
+                    }
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------------------------
+// RECHARGE & PRO UPGRADE SCREEN
+// -------------------------------------------------------------
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RechargeScreen(viewModel: BazaarViewModel) {
+    var selectedPlan by remember { mutableStateOf("1 Month PRO") }
+    var selectedAmount by remember { mutableStateOf(50.0) }
+    var utrInput by remember { mutableStateOf("") }
+    val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
+
+    val plans = listOf(
+        Triple("1 Month PRO", 50.0, "30 Days - Boost 5 Ads"),
+        Triple("3 Month PRO", 120.0, "90 Days - Boost 15 Ads"),
+        Triple("6 Month PRO", 200.0, "180 Days - Boost 35 Ads"),
+        Triple("1 Year PRO", 350.0, "365 Days - Unlimited Boosts")
+    )
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Upgrade to PRO", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = { viewModel.navigateTo(AppScreen.ACCOUNT) }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                Text("Select a PRO Subscription Plan", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            }
+
+            items(plans) { (name, amount, desc) ->
+                val isSelected = selectedPlan == name
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            selectedPlan = name
+                            selectedAmount = amount
+                        },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isSelected) PrimaryGreen.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                    ),
+                    border = if (isSelected) androidx.compose.foundation.BorderStroke(2.dp, PrimaryGreen) else null
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("UPI ID to Pay", fontSize = 11.sp, color = Slate500)
-                            Text(upiId, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Slate900)
+                            Text(name, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                            Text(desc, fontSize = 12.sp, color = Color.Gray)
                         }
-
-                        IconButton(
-                            onClick = {
-                                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                val clip = ClipData.newPlainText("UPI ID", upiId)
-                                clipboard.setPrimaryClip(clip)
-                                Toast.makeText(context, "UPI ID copied: $upiId", Toast.LENGTH_SHORT).show()
-                            }
-                        ) {
-                            Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = BazaarOrange)
-                        }
+                        Text(
+                            "₹${amount.toInt()}",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = PrimaryGreen
+                        )
                     }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // UTR Input & Submit Card
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Submit Transaction UTR / Ref No.",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Slate900
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "After paying ₹50, enter the 12-digit UTR from your UPI app receipt to activate.",
-                    fontSize = 12.sp,
-                    color = Slate500
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                OutlinedTextField(
-                    value = utrNumber,
-                    onValueChange = { utrNumber = it.filter { ch -> ch.isLetterOrDigit() }.take(16) },
-                    placeholder = { Text("e.g. 412356789012") },
-                    singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("utr_input_field")
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = {
-                        if (utrNumber.length < 8) {
-                            viewModel.showSnackbar("Please enter a valid 12-digit UPI UTR number")
-                            return@Button
-                        }
-                        viewModel.submitRecharge("PRO Seller Plan (30 Days)", 50.0, utrNumber)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .testTag("submit_utr_btn"),
-                    colors = ButtonDefaults.buttonColors(containerColor = BazaarOrange),
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = White)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Activate PRO Membership", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = White)
-                }
-            }
-        }
-    }
-}
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text("Scan & Pay via UPI", fontWeight = FontWeight.Bold)
+                        Text("UPI ID: grejamarak@oksbi", fontSize = 13.sp, color = PrimaryGreen, fontWeight = FontWeight.Bold)
 
-@Composable
-private fun ProFeatureItem(text: String) {
-    Text(
-        text = text,
-        fontSize = 13.sp,
-        fontWeight = FontWeight.Medium,
-        color = Slate700,
-        modifier = Modifier.padding(vertical = 4.dp)
-    )
-}
-
-@Composable
-fun AdminPanelScreen(
-    viewModel: BazaarViewModel,
-    modifier: Modifier = Modifier
-) {
-    val rechargeRequests by viewModel.rechargeRequests.collectAsStateWithLifecycle()
-    val categories by viewModel.categories.collectAsStateWithLifecycle()
-    val listings by viewModel.filteredListings.collectAsStateWithLifecycle()
-    val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
-    val isConnected by viewModel.isFirebaseConnected.collectAsStateWithLifecycle()
-
-    var newCategoryName by remember { mutableStateOf("") }
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        // Top App Bar
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surface,
-            shadowElevation = 2.dp
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = { viewModel.navigateTo(AppScreen.HOME) }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Slate700)
-                }
-                Spacer(modifier = Modifier.width(4.dp))
-                Column {
-                    Text(
-                        text = "Admin & Moderation Panel",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Text(
-                        text = "Realtime Database & Marketplace Moderation",
-                        fontSize = 11.sp,
-                        color = Slate500
-                    )
-                }
-            }
-        }
-
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp, bottom = 90.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Stats Overview
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    AdminStatCard(title = "Total Ads", value = "${listings.size}", color = BazaarOrange, modifier = Modifier.weight(1f))
-                    AdminStatCard(title = "Categories", value = "${categories.size}", color = BazaarTeal, modifier = Modifier.weight(1f))
-                    AdminStatCard(title = "Recharges", value = "${rechargeRequests.size}", color = BazaarGold, modifier = Modifier.weight(1f))
-                }
-            }
-
-            // Firebase Cloud Realtime Database Card
-            item {
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = BazaarTealLight),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    if (isSyncing) Icons.Default.CloudSync else Icons.Default.CloudDone,
-                                    contentDescription = null,
-                                    tint = BazaarTeal,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Column {
-                                    Text(
-                                        text = "Firebase Realtime DB",
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = BazaarTeal
-                                    )
-                                    Text(
-                                        text = "localbazar-cff07",
-                                        fontSize = 11.sp,
-                                        color = Slate500
-                                    )
-                                }
-                            }
-
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = if (isConnected) BazaarGreenLight else Red500.copy(alpha = 0.1f)
-                            ) {
-                                Text(
-                                    text = if (isConnected) "CONNECTED" else "OFFLINE",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (isConnected) BazaarGreen else Red500,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text(
-                            text = "URL: https://localbazar-cff07-default-rtdb.firebaseio.com",
-                            fontSize = 11.sp,
-                            color = Slate700
+                        OutlinedTextField(
+                            value = utrInput,
+                            onValueChange = { utrInput = it },
+                            label = { Text("Enter 12-digit UTR / Ref Number") },
+                            modifier = Modifier.fillMaxWidth()
                         )
-
-                        Spacer(modifier = Modifier.height(12.dp))
 
                         Button(
-                            onClick = { viewModel.syncFirebaseData(silent = false) },
-                            enabled = !isSyncing,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = BazaarTeal)
-                        ) {
-                            Icon(Icons.Default.Refresh, contentDescription = null, tint = White, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = if (isSyncing) "Syncing with Cloud..." else "Sync Cloud Database Now",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = White
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Category Management Section
-            item {
-                Card(
-                    shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "Manage Categories (${categories.size})",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Slate900
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            OutlinedTextField(
-                                value = newCategoryName,
-                                onValueChange = { newCategoryName = it },
-                                placeholder = { Text("New category name...", fontSize = 13.sp) },
-                                singleLine = true,
-                                shape = RoundedCornerShape(10.dp),
-                                modifier = Modifier.weight(1f)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Button(
-                                onClick = {
-                                    if (newCategoryName.isNotBlank()) {
-                                        viewModel.addCategory(newCategoryName.trim(), "Tag")
-                                        newCategoryName = ""
-                                    }
-                                },
-                                shape = RoundedCornerShape(10.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = BazaarOrange)
-                            ) {
-                                Icon(Icons.Default.Add, contentDescription = "Add", tint = White)
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Pending Recharge Requests Section
-            item {
-                Text(
-                    text = "PRO Recharge Requests",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Slate900
-                )
-            }
-
-            if (rechargeRequests.isEmpty()) {
-                item {
-                    Text("No pending recharge requests.", fontSize = 13.sp, color = Slate500)
-                }
-            } else {
-                items(rechargeRequests, key = { it.id }) { req ->
-                    Card(
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = if (req.userName.isNotBlank() && req.userName != "Unknown user") req.userName else "User",
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Slate900
-                                )
-                                if (req.userEmail.isNotBlank()) {
-                                    Text(text = req.userEmail, fontSize = 11.sp, color = Slate500)
+                            onClick = {
+                                if (utrInput.length < 6) {
+                                    Toast.makeText(context, "Please enter a valid UTR number", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    viewModel.submitMonthlyPlanRequest(selectedPlan, selectedAmount, utrInput)
                                 }
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(text = "${req.planName} • ${formatRupee(req.amount)}", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = BazaarOrangeDark)
-                                Text(text = "UTR: ${req.utrNumber}", fontSize = 11.sp, color = Slate700)
-                                Text(text = "Status: ${req.status}", fontSize = 11.sp, color = if (req.status == "Approved") BazaarGreen else BazaarOrange)
-                            }
-
-                            if (req.status == "Pending") {
-                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    IconButton(
-                                        onClick = { viewModel.approveRecharge(req.id) },
-                                        modifier = Modifier
-                                            .size(36.dp)
-                                            .background(BazaarGreenLight, CircleShape)
-                                    ) {
-                                        Icon(Icons.Default.Check, contentDescription = "Approve", tint = BazaarGreen, modifier = Modifier.size(18.dp))
-                                    }
-                                    IconButton(
-                                        onClick = { viewModel.rejectRecharge(req.id) },
-                                        modifier = Modifier
-                                            .size(36.dp)
-                                            .background(Red500.copy(alpha = 0.1f), CircleShape)
-                                    ) {
-                                        Icon(Icons.Default.Close, contentDescription = "Reject", tint = Red500, modifier = Modifier.size(18.dp))
-                                    }
-                                }
-                            }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Submit Payment Request")
                         }
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun AdminStatCard(
-    title: String,
-    value: String,
-    color: Color,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.1f)),
-        modifier = modifier
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = value, fontSize = 20.sp, fontWeight = FontWeight.Black, color = color)
-            Text(text = title, fontSize = 11.sp, fontWeight = FontWeight.Medium, color = Slate700)
         }
     }
 }

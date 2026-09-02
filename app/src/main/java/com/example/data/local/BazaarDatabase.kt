@@ -12,18 +12,23 @@ import androidx.room.RoomDatabase
         LocationEntity::class,
         FavoriteEntity::class,
         ChatMessageEntity::class,
-        RechargeRequestEntity::class
+        RechargeRequestEntity::class,
+        UserEntity::class,
+        AdminSettingEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class BazaarDatabase : RoomDatabase() {
+
     abstract fun listingDao(): ListingDao
     abstract fun categoryDao(): CategoryDao
     abstract fun locationDao(): LocationDao
     abstract fun favoriteDao(): FavoriteDao
     abstract fun chatDao(): ChatDao
     abstract fun rechargeDao(): RechargeDao
+    abstract fun userDao(): UserDao
+    abstract fun adminSettingDao(): AdminSettingDao
 
     companion object {
         @Volatile
